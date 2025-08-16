@@ -1,0 +1,237 @@
+package edu.pahana.controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import edu.pahana.model.Customer;
+import edu.pahana.service.CustomerService;
+
+/**
+ * Controller for handling customer-related requests.
+ * Manages customer listing, creation, editing, and deletion.
+ */
+@WebServlet("/customer")
+public class CustomerController extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    
+    private CustomerService customerService;
+    
+    /**
+     * Initializes the controller
+     */
+    public void init() throws ServletException {
+        customerService = CustomerService.getInstance();
+    }
+    
+    /**
+     * Handles GET requests for customer management
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Check if user is logged in
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect("auth?action=login");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        if (action == null || action.equals("list")) {
+            listCustomers(request, response);
+        } else if (action.equals("add")) {
+            showAddForm(request, response);
+        } else if (action.equals("edit")) {
+            showEditForm(request, response);
+        } else if (action.equals("delete")) {
+            deleteCustomer(request, response);
+        } else if (action.equals("view")) {
+            viewCustomer(request, response);
+        }
+    }
+    
+    /**
+     * Handles POST requests for customer management
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Check if user is logged in
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect("auth?action=login");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        if (action.equals("add")) {
+            addCustomer(request, response);
+        } else if (action.equals("update")) {
+            updateCustomer(request, response);
+        }
+    }
+    
+    /**
+     * Lists all customers
+     */
+    private void listCustomers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        List<Customer> customerList = new ArrayList<>();
+        try {
+            customerList = customerService.getAllCustomers();
+            request.setAttribute("customers", customerList);
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+            return;
+        }
+        
+        request.getRequestDispatcher("WEB-INF/view/customer/listCustomers.jsp").forward(request, response);
+    }
+    
+    /**
+     * Shows the form for adding a new customer
+     */
+    private void showAddForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            // Generate a new account number
+            String accountNumber = customerService.generateAccountNumber();
+            request.setAttribute("accountNumber", accountNumber);
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+            return;
+        }
+        
+        request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+    }
+    
+    /**
+     * Processes the addition of a new customer
+     */
+    private void addCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String accountNumber = request.getParameter("accountNumber");
+        String name = request.getParameter("name");
+        String address = request.getParameter("address");
+        String telephone = request.getParameter("telephone");
+        
+        // Validate input
+        if (accountNumber == null || accountNumber.trim().isEmpty() ||
+            name == null || name.trim().isEmpty() ||
+            address == null || address.trim().isEmpty() ||
+            telephone == null || telephone.trim().isEmpty()) {
+            
+            request.setAttribute("errorMessage", "All fields are required");
+            request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+            return;
+        }
+        
+        Customer customer = new Customer(accountNumber, name, address, telephone);
+        
+        try {
+            boolean success = customerService.addCustomer(customer);
+            
+            if (success) {
+                // Customer added successfully
+                response.sendRedirect("customer?action=list");
+            } else {
+                // Customer addition failed (likely account number already exists)
+                request.setAttribute("errorMessage", "Account number already exists");
+                request.setAttribute("customer", customer);
+                request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+            }
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Shows the form for editing a customer
+     */
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int customerId = Integer.parseInt(request.getParameter("id"));
+        try {
+            Customer customer = customerService.getCustomerById(customerId);
+            request.setAttribute("customer", customer);
+            request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Processes the update of a customer
+     */
+    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int customerId = Integer.parseInt(request.getParameter("id"));
+        String accountNumber = request.getParameter("accountNumber");
+        String name = request.getParameter("name");
+        String address = request.getParameter("address");
+        String telephone = request.getParameter("telephone");
+        
+        // Validate input
+        if (accountNumber == null || accountNumber.trim().isEmpty() ||
+            name == null || name.trim().isEmpty() ||
+            address == null || address.trim().isEmpty() ||
+            telephone == null || telephone.trim().isEmpty()) {
+            
+            request.setAttribute("errorMessage", "All fields are required");
+            request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+            return;
+        }
+        
+        Customer customer = new Customer(customerId, accountNumber, name, address, telephone);
+        
+        try {
+            boolean success = customerService.updateCustomer(customer);
+            
+            if (success) {
+                // Customer updated successfully
+                response.sendRedirect("customer?action=list");
+            } else {
+                // Customer update failed (likely account number already exists for another customer)
+                request.setAttribute("errorMessage", "Account number already exists for another customer");
+                request.setAttribute("customer", customer);
+                request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+            }
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Processes the deletion of a customer
+     */
+    private void deleteCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int customerId = Integer.parseInt(request.getParameter("id"));
+        try {
+            customerService.deleteCustomer(customerId);
+            response.sendRedirect("customer?action=list");
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Shows the details of a customer
+     */
+    private void viewCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int customerId = Integer.parseInt(request.getParameter("id"));
+        try {
+            Customer customer = customerService.getCustomerById(customerId);
+            request.setAttribute("customer", customer);
+            request.getRequestDispatcher("WEB-INF/view/customer/viewCustomer.jsp").forward(request, response);
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+        }
+    }
+}
