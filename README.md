@@ -5,7 +5,7 @@
 1. **Clone or Download the Project**
    - Download the project ZIP or clone the repository:
      ```
-     git clone <repository-url>
+     git clone https://github.com/TharinduWijayarathna/PahanaEDU.git
      ```
 
 2. **Open Eclipse IDE**
