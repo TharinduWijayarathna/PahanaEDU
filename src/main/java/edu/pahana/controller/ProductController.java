@@ -226,13 +226,30 @@ public class ProductController extends HttpServlet {
 
 	private void showEditForm(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int productId = Integer.parseInt(productIdStr);
 			Product product = productService.getProductById(productId);
+			
+			if (product == null) {
+				request.setAttribute("errorMessage", "Product not found");
+				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+				return;
+			}
+			
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}

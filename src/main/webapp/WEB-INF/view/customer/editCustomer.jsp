@@ -42,7 +42,7 @@
 
 			<form action="customer" method="post" class="space-y-6">
 				<input type="hidden" name="action" value="update"> <input
-					type="hidden" name="customerId" value="${customer.customerId}">
+					type="hidden" name="id" value="${customer.customerId}">
 
 				<div>
 					<label for="accountNumber"

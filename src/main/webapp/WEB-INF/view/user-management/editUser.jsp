@@ -104,10 +104,10 @@
 				<label for="role"
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-user-tag mr-2 text-orange-600"></i>Role
-				</label> <select id="role" name="role" required
+				</label> 				<select id="role" name="role" required
 					class="w-full px-4 py-3 border ${fieldErrors.role != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-					<option value="user" ${role != null ? (role == 'user' ? 'selected' : '') : (user.role=='user' ? 'selected' : '')}>User</option>
-					<option value="admin" ${role != null ? (role == 'admin' ? 'selected' : '') : (user.role=='admin' ? 'selected' : '')}>Admin</option>
+					<option value="user" ${(role != null && role == 'user') || (role == null && user.role == 'user') ? 'selected' : ''}>User</option>
+					<option value="admin" ${(role != null && role == 'admin') || (role == null && user.role == 'admin') ? 'selected' : ''}>Admin</option>
 				</select>
 				<c:if test="${fieldErrors.role != null}">
 					<p class="mt-1 text-sm text-red-600">${fieldErrors.role}</p>

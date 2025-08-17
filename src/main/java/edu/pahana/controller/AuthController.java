@@ -147,6 +147,7 @@ public class AuthController extends HttpServlet {
 				session.setAttribute("user", user);
 				session.setAttribute("username", user.getUsername());
 				session.setAttribute("role", user.getRole());
+				session.setAttribute("userId", user.getUserId());
 
 				// Log user login activity
 				try {

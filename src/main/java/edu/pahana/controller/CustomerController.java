@@ -207,13 +207,30 @@ public class CustomerController extends HttpServlet {
 	 */
 	private void showEditForm(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int customerId = Integer.parseInt(request.getParameter("id"));
+		String customerIdStr = request.getParameter("id");
+		if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Customer ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int customerId = Integer.parseInt(customerIdStr);
 			Customer customer = customerService.getCustomerById(customerId);
+			
+			if (customer == null) {
+				request.setAttribute("errorMessage", "Customer not found");
+				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+				return;
+			}
+			
 			request.setAttribute("customer", customer);
 			request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid customer ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}

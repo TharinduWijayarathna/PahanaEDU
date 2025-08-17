@@ -128,7 +128,7 @@
 										class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
 										<i class="fas fa-edit"></i>
 									</a>
-									<c:if test="${user.userId != sessionScope.userId}">
+									<c:if test="${user.userId != sessionScope.user.userId}">
 										<a href="user-management?action=delete&id=${user.userId}"
 											onclick="return confirm('Are you sure you want to delete this user?')"
 											class="text-red-600 hover:text-red-900 transition-colors duration-200">
