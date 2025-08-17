@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.Customer;
 import edu.pahana.service.CustomerService;
+import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
 
 /**
@@ -26,12 +27,22 @@ public class CustomerController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
     private CustomerService customerService;
+    private ActivityService activityService;
     
     /**
      * Initializes the controller
      */
     public void init() throws ServletException {
         customerService = CustomerService.getInstance();
+        activityService = new ActivityService();
+        
+        // Initialize activity system
+        try {
+            activityService.initialize();
+        } catch (Exception e) {
+            // Log error but don't fail initialization
+            System.err.println("Failed to initialize activity system: " + e.getMessage());
+        }
     }
     
     /**
@@ -147,6 +158,16 @@ public class CustomerController extends HttpServlet {
             boolean success = customerService.addCustomer(customer);
             
             if (success) {
+                // Log customer addition activity
+                try {
+                    HttpSession session = request.getSession(false);
+                    String username = session != null ? (String) session.getAttribute("username") : "system";
+                    activityService.logCustomerAdded(customer.getCustomerId(), customer.getName(), username);
+                } catch (Exception e) {
+                    // Log error but don't fail customer addition
+                    System.err.println("Failed to log customer addition activity: " + e.getMessage());
+                }
+                
                 // Customer added successfully
                 response.sendRedirect("customer?action=list");
             } else {

@@ -18,6 +18,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.Product;
 import edu.pahana.service.ProductService;
+import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
 
 @WebServlet("/product")
@@ -25,9 +26,19 @@ public class ProductController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private ProductService productService;
+	private ActivityService activityService;
 	
 	public void init() throws ServletException {
 		productService = ProductService.getInstance();
+		activityService = new ActivityService();
+		
+		// Initialize activity system
+		try {
+			activityService.initialize();
+		} catch (Exception e) {
+			// Log error but don't fail initialization
+			System.err.println("Failed to initialize activity system: " + e.getMessage());
+		}
 	}
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -158,6 +169,17 @@ public class ProductController extends HttpServlet {
 	        
 	        try {
 	            productService.addProduct(product);
+	            
+	            // Log product addition activity
+	            try {
+	                HttpSession session = request.getSession(false);
+	                String username = session != null ? (String) session.getAttribute("username") : "system";
+	                activityService.logProductAdded(product.getProductId(), product.getName(), username);
+	            } catch (Exception e) {
+	                // Log error but don't fail product addition
+	                System.err.println("Failed to log product addition activity: " + e.getMessage());
+	            }
+	            
 	            response.sendRedirect("product?action=list");
 	        } catch (SQLException e) {
 	            request.setAttribute("error", "Database error: " + e.getMessage());

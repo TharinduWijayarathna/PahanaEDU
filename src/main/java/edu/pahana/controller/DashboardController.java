@@ -4,6 +4,7 @@ import edu.pahana.service.BillService;
 import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.UserService;
+import edu.pahana.service.ActivityService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,6 +28,7 @@ public class DashboardController extends HttpServlet {
     private CustomerService customerService;
     private ProductService productService;
     private UserService userService;
+    private ActivityService activityService;
     
     @Override
     public void init() throws ServletException {
@@ -34,6 +36,15 @@ public class DashboardController extends HttpServlet {
         customerService = CustomerService.getInstance();
         productService = ProductService.getInstance();
         userService = UserService.getInstance();
+        activityService = new ActivityService();
+        
+        // Initialize activity system
+        try {
+            activityService.initialize();
+        } catch (Exception e) {
+            // Log error but don't fail initialization
+            System.err.println("Failed to initialize activity system: " + e.getMessage());
+        }
     }
     
     @Override
@@ -107,6 +118,10 @@ public class DashboardController extends HttpServlet {
             // System Status
             Map<String, Object> systemStatus = getSystemStatus();
             request.setAttribute("systemStatus", systemStatus);
+            
+            // Recent Activity
+            List<Map<String, Object>> recentActivities = getRecentActivities(5);
+            request.setAttribute("recentActivities", recentActivities);
 
         } catch (Exception e) {
             request.setAttribute("error", "Error loading dashboard data: " + e.getMessage());
@@ -291,6 +306,25 @@ public class DashboardController extends HttpServlet {
         systemStatus.put("overallStatus", "All Systems Operational");
         
         return systemStatus;
+    }
+    
+    private List<Map<String, Object>> getRecentActivities(int limit) throws SQLException {
+        List<edu.pahana.model.Activity> activities = activityService.getRecentActivities(limit);
+        
+        return activities.stream()
+            .map(activity -> {
+                Map<String, Object> activityData = new HashMap<>();
+                activityData.put("activityType", activity.getActivityType());
+                activityData.put("description", activity.getDescription());
+                activityData.put("entityName", activity.getEntityName());
+                activityData.put("username", activity.getUsername());
+                activityData.put("timestamp", activity.getTimestamp());
+                activityData.put("timeAgo", activity.getTimeAgo());
+                activityData.put("color", activity.getActivityColor());
+                activityData.put("icon", activity.getActivityIcon());
+                return activityData;
+            })
+            .collect(Collectors.toList());
     }
     
     private void showReports(HttpServletRequest request, HttpServletResponse response) 

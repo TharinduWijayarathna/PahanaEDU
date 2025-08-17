@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.User;
 import edu.pahana.service.UserService;
+import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
 
 /**
@@ -26,12 +27,22 @@ public class AuthController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
     private UserService userService;
+    private ActivityService activityService;
     
     /**
      * Initializes the controller
      */
     public void init() throws ServletException {
         userService = UserService.getInstance();
+        activityService = new ActivityService();
+        
+        // Initialize activity system
+        try {
+            activityService.initialize();
+        } catch (Exception e) {
+            // Log error but don't fail initialization
+            System.err.println("Failed to initialize activity system: " + e.getMessage());
+        }
     }
     
     /**
@@ -131,6 +142,14 @@ public class AuthController extends HttpServlet {
                 session.setAttribute("user", user);
                 session.setAttribute("username", user.getUsername());
                 session.setAttribute("role", user.getRole());
+                
+                // Log user login activity
+                try {
+                    activityService.logUserLogin(user.getUsername());
+                } catch (Exception e) {
+                    // Log error but don't fail login
+                    System.err.println("Failed to log user login activity: " + e.getMessage());
+                }
                 
                 // Redirect to dashboard or home page
                 response.sendRedirect("dashboard");
