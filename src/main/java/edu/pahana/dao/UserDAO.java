@@ -150,6 +150,37 @@ public class UserDAO {
 	}
 
 	/**
+	 * Searches users by username or role
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching users
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> searchUsers(String searchTerm) throws SQLException {
+		List<User> users = new ArrayList<>();
+		String query = "SELECT * FROM User WHERE username LIKE ? OR role LIKE ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			User user = new User();
+			user.setUserId(resultSet.getInt("user_id"));
+			user.setUsername(resultSet.getString("username"));
+			user.setPassword(resultSet.getString("password"));
+			user.setRole(resultSet.getString("role"));
+			user.setCreatedAt(resultSet.getTimestamp("created_at"));
+			users.add(user);
+		}
+
+		return users;
+	}
+
+	/**
 	 * Updates a user in the database
 	 * 
 	 * @param user The user to update

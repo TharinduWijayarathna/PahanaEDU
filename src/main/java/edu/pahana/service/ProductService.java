@@ -30,8 +30,25 @@ public class ProductService {
 		productDAO.addProduct(product);
 	}
 
+	/**
+	 * Gets all products
+	 * 
+	 * @return List of all products
+	 * @throws SQLException if a database error occurs
+	 */
 	public List<Product> getAllProducts() throws SQLException {
 		return productDAO.getAllProducts();
+	}
+
+	/**
+	 * Searches products by name, author, or ISBN
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching products
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Product> searchProducts(String searchTerm) throws SQLException {
+		return productDAO.searchProducts(searchTerm);
 	}
 
 	public Product getProductById(int productId) throws SQLException {

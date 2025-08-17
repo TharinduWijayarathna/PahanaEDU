@@ -87,6 +87,17 @@ public class CustomerService {
 	}
 
 	/**
+	 * Searches customers by name, telephone, or account number
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> searchCustomers(String searchTerm) throws SQLException {
+		return customerDAO.searchCustomers(searchTerm);
+	}
+
+	/**
 	 * Updates a customer
 	 * 
 	 * @param customer The customer to update

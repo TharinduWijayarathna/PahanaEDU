@@ -83,8 +83,25 @@ public class BillService {
 		return billDAO.getBillsByCustomerId(customerId);
 	}
 
+	/**
+	 * Gets all bills
+	 * 
+	 * @return List of all bills
+	 * @throws SQLException if a database error occurs
+	 */
 	public List<Bill> getAllBills() throws SQLException {
 		return billDAO.getAllBills();
+	}
+
+	/**
+	 * Searches bills by customer name, account number, or bill ID
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> searchBills(String searchTerm) throws SQLException {
+		return billDAO.searchBills(searchTerm);
 	}
 
 	public boolean updateBillStatus(int billId, String status) throws SQLException {

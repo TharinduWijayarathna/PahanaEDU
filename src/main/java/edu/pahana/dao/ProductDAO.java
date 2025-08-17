@@ -57,6 +57,43 @@ public class ProductDAO {
 		return products;
 	}
 
+	/**
+	 * Searches products by name, author, or ISBN
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching products
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Product> searchProducts(String searchTerm) throws SQLException {
+		List<Product> products = new ArrayList<>();
+		String query = "SELECT * FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			int id = resultSet.getInt("product_id");
+			String name = resultSet.getString("name");
+			String desc = resultSet.getString("description");
+			double price = resultSet.getDouble("price");
+			int quantity = resultSet.getInt("stock_quantity");
+			String isbn = resultSet.getString("isbn");
+			String author = resultSet.getString("author");
+			String publisher = resultSet.getString("publisher");
+			Date pubDate = resultSet.getDate("publication_date");
+
+			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			products.add(product);
+		}
+
+		return products;
+	}
+
 	public Product getProductById(int productId) throws SQLException {
 		String query = "SELECT * FROM Product WHERE product_id = ?";
 		Product product = null;

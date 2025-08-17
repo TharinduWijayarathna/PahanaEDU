@@ -102,7 +102,15 @@ public class BillController extends HttpServlet {
 			throws ServletException, IOException {
 
 		try {
-			List<Bill> bills = billService.getAllBills();
+			String searchTerm = request.getParameter("search");
+			List<Bill> bills;
+			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+				// Search bills
+				bills = billService.searchBills(searchTerm.trim());
+			} else {
+				// Get all bills
+				bills = billService.getAllBills();
+			}
 			request.setAttribute("bills", bills);
 		} catch (Exception e) {
 			request.setAttribute("error", "Error loading bills: " + e.getMessage());

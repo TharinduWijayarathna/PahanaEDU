@@ -87,7 +87,14 @@ public class ProductController extends HttpServlet {
 
 		List<Product> productList = new ArrayList<Product>();
 		try {
-			productList = productService.getAllProducts();
+			String searchTerm = request.getParameter("search");
+			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+				// Search products
+				productList = productService.searchProducts(searchTerm.trim());
+			} else {
+				// Get all products
+				productList = productService.getAllProducts();
+			}
 			request.setAttribute("products", productList);
 		} catch (SQLException e) {
 			request.setAttribute("errorMessage", e.getMessage());

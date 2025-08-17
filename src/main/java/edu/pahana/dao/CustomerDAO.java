@@ -127,6 +127,40 @@ public class CustomerDAO {
 	}
 
 	/**
+	 * Searches customers by name or telephone
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> searchCustomers(String searchTerm) throws SQLException {
+		List<Customer> customers = new ArrayList<>();
+		String query = "SELECT * FROM Customer WHERE name LIKE ? OR telephone LIKE ? OR account_number LIKE ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			Customer customer = new Customer();
+			customer.setCustomerId(resultSet.getInt("customer_id"));
+			customer.setAccountNumber(resultSet.getString("account_number"));
+			customer.setName(resultSet.getString("name"));
+			customer.setAddress(resultSet.getString("address"));
+			customer.setTelephone(resultSet.getString("telephone"));
+			customer.setCreatedAt(resultSet.getTimestamp("created_at"));
+			customer.setUpdatedAt(resultSet.getTimestamp("updated_at"));
+			customers.add(customer);
+		}
+
+		return customers;
+	}
+
+	/**
 	 * Updates a customer in the database
 	 * 
 	 * @param customer The customer to update

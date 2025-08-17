@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ include file="../shared/layout.jsp"%>
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -43,14 +44,36 @@
 			<div class="flex-1">
 				<input type="text" name="search" value="${param.search}"
 					placeholder="Search users by username or role..."
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
 			</div>
 			<button type="submit"
 				class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
 				<i class="fas fa-search mr-2"></i>Search
 			</button>
+			<c:if test="${not empty param.search}">
+				<a href="user-management?action=list"
+					class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
+					<i class="fas fa-times mr-2"></i>Clear
+				</a>
+			</c:if>
 		</form>
 	</div>
+
+	<!-- Search Results Info -->
+	<c:if test="${not empty param.search}">
+		<div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+			<div class="flex items-center">
+				<i class="fas fa-search text-blue-500 mr-2"></i>
+				<span class="text-blue-800">
+					Search results for "<strong>${param.search}</strong>" - 
+					<c:choose>
+						<c:when test="${empty users}">No users found</c:when>
+						<c:otherwise>${fn:length(users)} user(s) found</c:otherwise>
+					</c:choose>
+				</span>
+			</div>
+		</div>
+	</c:if>
 
 	<!-- Users Table -->
 	<div

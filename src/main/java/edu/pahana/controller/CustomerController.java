@@ -92,13 +92,20 @@ public class CustomerController extends HttpServlet {
 	}
 
 	/**
-	 * Lists all customers
+	 * Lists all customers or searches customers based on search parameter
 	 */
 	private void listCustomers(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		List<Customer> customerList = new ArrayList<>();
 		try {
-			customerList = customerService.getAllCustomers();
+			String searchTerm = request.getParameter("search");
+			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+				// Search customers
+				customerList = customerService.searchCustomers(searchTerm.trim());
+			} else {
+				// Get all customers
+				customerList = customerService.getAllCustomers();
+			}
 			request.setAttribute("customers", customerList);
 		} catch (SQLException e) {
 			request.setAttribute("errorMessage", e.getMessage());

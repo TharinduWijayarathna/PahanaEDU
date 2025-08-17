@@ -114,6 +114,17 @@ public class UserService {
 	}
 
 	/**
+	 * Searches users by username or role
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching users
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> searchUsers(String searchTerm) throws SQLException {
+		return userDAO.searchUsers(searchTerm);
+	}
+
+	/**
 	 * Updates a user
 	 * 
 	 * @param user The user to update
