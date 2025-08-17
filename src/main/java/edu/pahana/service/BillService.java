@@ -74,7 +74,7 @@ public class BillService {
         return billDAO.deleteBill(billId);
     }
     
-    public Bill createBillFromItems(int customerId, List<BillItem> items) throws SQLException {
+    public Bill createBillFromItems(int customerId, List<BillItem> items, BigDecimal billDiscount) throws SQLException {
         // Get customer information
         Customer customer = customerDAO.getCustomerById(customerId);
         if (customer == null) {
@@ -90,7 +90,10 @@ public class BillService {
             Product product = productDAO.getProductById(item.getProductId());
             if (product != null) {
                 item.setProductName(product.getName());
-                item.setUnitPrice(BigDecimal.valueOf(product.getPrice()));
+                // Keep the unit price from the form (which may include custom pricing)
+                if (item.getUnitPrice() == null || item.getUnitPrice().compareTo(BigDecimal.ZERO) == 0) {
+                    item.setUnitPrice(BigDecimal.valueOf(product.getPrice()));
+                }
                 item.calculateSubtotal();
                 validItems.add(item);
             }
@@ -98,6 +101,13 @@ public class BillService {
         
         bill.setItems(validItems);
         bill.calculateTotal();
+        
+        // Apply bill-level discount
+        if (billDiscount != null && billDiscount.compareTo(BigDecimal.ZERO) > 0) {
+            bill.setDiscount(billDiscount);
+            BigDecimal discountAmount = bill.getTotalAmount().multiply(billDiscount).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+            bill.setTotalAmount(bill.getTotalAmount().subtract(discountAmount).setScale(2, BigDecimal.ROUND_HALF_UP));
+        }
         
         return bill;
     }

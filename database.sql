@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS Bill (
     account_number VARCHAR(20) NOT NULL,
     bill_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL,
+    discount DECIMAL(5, 2) DEFAULT 0.00,
     status VARCHAR(20) DEFAULT 'pending',
     FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );

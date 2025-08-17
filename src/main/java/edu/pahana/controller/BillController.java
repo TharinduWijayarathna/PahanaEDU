@@ -168,6 +168,10 @@ public class BillController extends HttpServlet {
             // Get items from request
             String[] productIds = request.getParameterValues("productId");
             String[] quantities = request.getParameterValues("quantity");
+            String[] unitPrices = request.getParameterValues("unitPrice");
+            
+            // Get bill-level discount
+            String billDiscountStr = request.getParameter("billDiscount");
             
             // Validate customer ID
             if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
@@ -185,8 +189,8 @@ public class BillController extends HttpServlet {
                 return;
             }
             
-            if (productIds == null || quantities == null || productIds.length == 0) {
-                request.setAttribute("error", "Please add at least one item to the bill");
+            if (productIds == null || quantities == null || unitPrices == null || productIds.length == 0) {
+                request.setAttribute("error", "Please add at least one item to the invoice");
                 showCreateBillForm(request, response);
                 return;
             }
@@ -196,10 +200,11 @@ public class BillController extends HttpServlet {
             
             for (int i = 0; i < productIds.length; i++) {
                 if (productIds[i] != null && !productIds[i].trim().isEmpty() &&
-                    quantities[i] != null && !quantities[i].trim().isEmpty()) {
+                    quantities[i] != null && !quantities[i].trim().isEmpty() &&
+                    unitPrices[i] != null && !unitPrices[i].trim().isEmpty()) {
                     
-                    // Validate bill item
-                    Map<String, String> itemErrors = ValidationUtils.validateBillItem(productIds[i], quantities[i], "0");
+                    // Validate bill item (no discount validation needed for items)
+                    Map<String, String> itemErrors = ValidationUtils.validateBillItem(productIds[i], quantities[i], unitPrices[i]);
                     
                     if (!itemErrors.isEmpty()) {
                         validationErrors.putAll(itemErrors);
@@ -207,16 +212,18 @@ public class BillController extends HttpServlet {
                         try {
                             int productId = Integer.parseInt(productIds[i]);
                             int quantity = Integer.parseInt(quantities[i]);
+                            double unitPrice = Double.parseDouble(unitPrices[i]);
                             
                             Product product = productService.getProductById(productId);
                             if (product != null) {
-                                BillItem item = new BillItem(productId, product.getName(), quantity, BigDecimal.valueOf(product.getPrice()));
+                                BillItem item = new BillItem(productId, product.getName(), quantity, BigDecimal.valueOf(unitPrice));
+                                item.calculateSubtotal();
                                 items.add(item);
                             } else {
                                 validationErrors.put("productId", "Invalid product selected");
                             }
                         } catch (NumberFormatException e) {
-                            validationErrors.put("quantity", "Invalid quantity value");
+                            validationErrors.put("quantity", "Invalid quantity or price value");
                         }
                     }
                 }
@@ -229,13 +236,32 @@ public class BillController extends HttpServlet {
             }
             
             if (items.isEmpty()) {
-                request.setAttribute("error", "Please add at least one valid item to the bill");
+                request.setAttribute("error", "Please add at least one valid item to the invoice");
+                showCreateBillForm(request, response);
+                return;
+            }
+            
+            // Validate bill discount
+            double billDiscount = 0.0;
+            if (billDiscountStr != null && !billDiscountStr.trim().isEmpty()) {
+                try {
+                    billDiscount = Double.parseDouble(billDiscountStr);
+                    if (billDiscount < 0 || billDiscount > 100) {
+                        validationErrors.put("billDiscount", "Bill discount must be between 0 and 100 percent");
+                    }
+                } catch (NumberFormatException e) {
+                    validationErrors.put("billDiscount", "Please enter a valid discount percentage");
+                }
+            }
+            
+            if (!validationErrors.isEmpty()) {
+                request.setAttribute("fieldErrors", validationErrors);
                 showCreateBillForm(request, response);
                 return;
             }
             
             // Create bill
-            Bill bill = billService.createBillFromItems(customerId, items);
+            Bill bill = billService.createBillFromItems(customerId, items, BigDecimal.valueOf(billDiscount));
             
             if (bill != null && billService.createBill(bill)) {
                 // Log bill creation activity

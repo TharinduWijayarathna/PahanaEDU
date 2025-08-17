@@ -69,11 +69,12 @@ public class BillServiceTest {
         testProduct.setDescription("A test book");
         testProduct.setPrice(29.99);
 
-        // Create test bill item
+        // Create test bill item (no discount field anymore)
         testBillItem = new BillItem();
         testBillItem.setBillItemId(1);
         testBillItem.setBillId(1);
         testBillItem.setProductId(1);
+        testBillItem.setProductName("Test Book");
         testBillItem.setQuantity(2);
         testBillItem.setUnitPrice(new BigDecimal("29.99"));
         testBillItem.setSubtotal(new BigDecimal("59.98"));
@@ -82,8 +83,11 @@ public class BillServiceTest {
         testBill = new Bill();
         testBill.setBillId(1);
         testBill.setCustomerId(1);
+        testBill.setCustomerName("John Doe");
+        testBill.setAccountNumber("ACC001");
         testBill.setBillDate(LocalDateTime.now());
         testBill.setTotalAmount(new BigDecimal("59.98"));
+        testBill.setDiscount(BigDecimal.ZERO); // Initialize with zero discount
         testBill.setStatus("PENDING");
         
         List<BillItem> items = new ArrayList<>();
@@ -162,8 +166,11 @@ public class BillServiceTest {
         // Arrange
         Bill billWithNoItems = new Bill();
         billWithNoItems.setCustomerId(1);
+        billWithNoItems.setCustomerName("John Doe");
+        billWithNoItems.setAccountNumber("ACC001");
         billWithNoItems.setBillDate(LocalDateTime.now());
         billWithNoItems.setTotalAmount(new BigDecimal("0.00"));
+        billWithNoItems.setDiscount(BigDecimal.ZERO);
         billWithNoItems.setStatus("PENDING");
         billWithNoItems.setItems(new ArrayList<>());
 
@@ -440,18 +447,49 @@ public class BillServiceTest {
         int customerId = 1;
         List<BillItem> items = new ArrayList<>();
         items.add(testBillItem);
+        BigDecimal billDiscount = BigDecimal.ZERO;
         
         when(customerDAO.getCustomerById(customerId)).thenReturn(testCustomer);
         when(productDAO.getProductById(1)).thenReturn(testProduct);
 
         // Act
-        Bill result = billService.createBillFromItems(customerId, items);
+        Bill result = billService.createBillFromItems(customerId, items, billDiscount);
 
         // Assert
         assertNotNull("Bill should be created", result);
         assertEquals("Customer ID should match", customerId, result.getCustomerId());
         assertEquals("Customer name should match", testCustomer.getName(), result.getCustomerName());
         assertEquals("Account number should match", testCustomer.getAccountNumber(), result.getAccountNumber());
+        assertEquals("Discount should be set", billDiscount, result.getDiscount());
+        verify(customerDAO).getCustomerById(customerId);
+        verify(productDAO).getProductById(1);
+    }
+
+    @Test
+    public void testCreateBillFromItems_WithDiscount() throws SQLException {
+        // Arrange
+        int customerId = 1;
+        List<BillItem> items = new ArrayList<>();
+        items.add(testBillItem);
+        BigDecimal billDiscount = new BigDecimal("10.00"); // 10% discount
+        
+        when(customerDAO.getCustomerById(customerId)).thenReturn(testCustomer);
+        when(productDAO.getProductById(1)).thenReturn(testProduct);
+
+        // Act
+        Bill result = billService.createBillFromItems(customerId, items, billDiscount);
+
+        // Assert
+        assertNotNull("Bill should be created", result);
+        assertEquals("Customer ID should match", customerId, result.getCustomerId());
+        assertEquals("Discount should be set", billDiscount, result.getDiscount());
+        
+        // Verify discount calculation: original total = 59.98, 10% discount = 6.00, final total = 53.98
+        BigDecimal expectedOriginalTotal = new BigDecimal("59.98");
+        BigDecimal expectedDiscountAmount = expectedOriginalTotal.multiply(billDiscount).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal expectedFinalTotal = expectedOriginalTotal.subtract(expectedDiscountAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        
+        assertEquals("Final total should be calculated with discount", expectedFinalTotal, result.getTotalAmount());
         verify(customerDAO).getCustomerById(customerId);
         verify(productDAO).getProductById(1);
     }
@@ -462,11 +500,12 @@ public class BillServiceTest {
         int customerId = 999;
         List<BillItem> items = new ArrayList<>();
         items.add(testBillItem);
+        BigDecimal billDiscount = BigDecimal.ZERO;
         
         when(customerDAO.getCustomerById(customerId)).thenReturn(null);
 
         // Act
-        Bill result = billService.createBillFromItems(customerId, items);
+        Bill result = billService.createBillFromItems(customerId, items, billDiscount);
 
         // Assert
         assertNull("Bill should not be created for non-existent customer", result);
@@ -480,17 +519,40 @@ public class BillServiceTest {
         int customerId = 1;
         List<BillItem> items = new ArrayList<>();
         items.add(testBillItem);
+        BigDecimal billDiscount = BigDecimal.ZERO;
         
         when(customerDAO.getCustomerById(customerId)).thenThrow(new SQLException("Database error"));
 
         // Act & Assert
         try {
-            billService.createBillFromItems(customerId, items);
+            billService.createBillFromItems(customerId, items, billDiscount);
             fail("Should throw SQLException");
         } catch (SQLException e) {
             assertEquals("Database error", e.getMessage());
         }
         verify(customerDAO).getCustomerById(customerId);
+    }
+
+    @Test
+    public void testCreateBillFromItems_WithInvalidProduct() throws SQLException {
+        // Arrange
+        int customerId = 1;
+        List<BillItem> items = new ArrayList<>();
+        items.add(testBillItem);
+        BigDecimal billDiscount = BigDecimal.ZERO;
+        
+        when(customerDAO.getCustomerById(customerId)).thenReturn(testCustomer);
+        when(productDAO.getProductById(1)).thenReturn(null); // Product not found
+
+        // Act
+        Bill result = billService.createBillFromItems(customerId, items, billDiscount);
+
+        // Assert
+        assertNotNull("Bill should be created", result);
+        assertEquals("Customer ID should match", customerId, result.getCustomerId());
+        assertTrue("Items list should be empty when product is invalid", result.getItems().isEmpty());
+        verify(customerDAO).getCustomerById(customerId);
+        verify(productDAO).getProductById(1);
     }
 
     @Test
@@ -605,5 +667,77 @@ public class BillServiceTest {
         // Assert
         assertFalse("Invalid product should make items invalid", result);
         verify(productDAO).getProductById(1);
+    }
+
+    @Test
+    public void testValidateBillItems_InvalidQuantity() throws SQLException {
+        // Arrange
+        List<BillItem> items = new ArrayList<>();
+        BillItem invalidItem = new BillItem();
+        invalidItem.setProductId(1);
+        invalidItem.setQuantity(0); // Invalid quantity
+        items.add(invalidItem);
+        
+        when(productDAO.getProductById(1)).thenReturn(testProduct);
+
+        // Act
+        boolean result = billService.validateBillItems(items);
+
+        // Assert
+        assertFalse("Invalid quantity should make items invalid", result);
+        verify(productDAO).getProductById(1);
+    }
+
+    @Test
+    public void testBillDiscountCalculation() {
+        // Test the discount calculation logic
+        BigDecimal originalAmount = new BigDecimal("100.00");
+        BigDecimal discountPercent = new BigDecimal("15.00"); // 15%
+        
+        BigDecimal discountAmount = originalAmount.multiply(discountPercent).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal finalAmount = originalAmount.subtract(discountAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        
+        assertEquals("Discount amount should be 15.00", new BigDecimal("15.00"), discountAmount);
+        assertEquals("Final amount should be 85.00", new BigDecimal("85.00"), finalAmount);
+    }
+
+    @Test
+    public void testBillDiscountCalculationWithPrecision() {
+        // Test discount calculation with more complex amounts
+        BigDecimal originalAmount = new BigDecimal("123.45");
+        BigDecimal discountPercent = new BigDecimal("10.50"); // 10.5%
+        
+        BigDecimal discountAmount = originalAmount.multiply(discountPercent).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal finalAmount = originalAmount.subtract(discountAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        
+        // 123.45 * 10.5% = 12.96 (rounded to 2 decimal places)
+        assertEquals("Discount amount should be 12.96", new BigDecimal("12.96"), discountAmount);
+        assertEquals("Final amount should be 110.49", new BigDecimal("110.49"), finalAmount);
+    }
+
+    @Test
+    public void testBillDiscountCalculationZeroDiscount() {
+        // Test discount calculation with zero discount
+        BigDecimal originalAmount = new BigDecimal("100.00");
+        BigDecimal discountPercent = BigDecimal.ZERO; // 0%
+        
+        BigDecimal discountAmount = originalAmount.multiply(discountPercent).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal finalAmount = originalAmount.subtract(discountAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        
+        assertEquals("Discount amount should be 0.00", BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP), discountAmount);
+        assertEquals("Final amount should equal original amount", originalAmount, finalAmount);
+    }
+
+    @Test
+    public void testBillDiscountCalculationHundredPercentDiscount() {
+        // Test discount calculation with 100% discount
+        BigDecimal originalAmount = new BigDecimal("100.00");
+        BigDecimal discountPercent = new BigDecimal("100.00"); // 100%
+        
+        BigDecimal discountAmount = originalAmount.multiply(discountPercent).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal finalAmount = originalAmount.subtract(discountAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        
+        assertEquals("Discount amount should be 100.00", new BigDecimal("100.00"), discountAmount);
+        assertEquals("Final amount should be 0.00", BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP), finalAmount);
     }
 }

@@ -11,6 +11,7 @@ public class Bill {
     private String accountNumber;
     private LocalDateTime billDate;
     private BigDecimal totalAmount;
+    private BigDecimal discount;
     private String status;
     private List<BillItem> items;
     
@@ -19,6 +20,7 @@ public class Bill {
         this.billDate = LocalDateTime.now();
         this.status = "pending";
         this.totalAmount = BigDecimal.ZERO;
+        this.discount = BigDecimal.ZERO;
     }
     
     // Constructor with customer info
@@ -78,6 +80,14 @@ public class Bill {
         this.totalAmount = totalAmount;
     }
     
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+    
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
+    }
+    
     public String getStatus() {
         return status;
     }
@@ -112,6 +122,7 @@ public class Bill {
                 ", accountNumber='" + accountNumber + '\'' +
                 ", billDate=" + billDate +
                 ", totalAmount=" + totalAmount +
+                ", discount=" + discount +
                 ", status='" + status + '\'' +
                 '}';
     }
