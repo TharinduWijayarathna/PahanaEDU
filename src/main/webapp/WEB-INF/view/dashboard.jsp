@@ -105,93 +105,284 @@
 		</div>
 	</div>
 
-	<!-- Quick Actions -->
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-		<a href="customer?action=list" class="group">
-			<div
-				class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group-hover:border-orange-300">
-				<div class="flex items-center justify-between mb-4">
-					<div
-						class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-						<i class="fas fa-users text-blue-600 text-xl"></i>
-					</div>
-					<i
-						class="fas fa-arrow-right text-gray-400 group-hover:text-orange-500 transition-colors duration-200"></i>
+	<!-- Revenue Analytics Section -->
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+		<!-- Monthly Revenue Chart -->
+		<div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+			<div class="flex items-center justify-between mb-6">
+				<h3 class="text-lg font-semibold text-gray-900">Revenue Analytics</h3>
+				<div class="flex space-x-2">
+					<button class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">${revenueData.currentMonthName}</button>
+					<button class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">${revenueData.lastMonthName}</button>
 				</div>
-				<h3 class="text-lg font-semibold text-gray-900 mb-2">Customer
-					Management</h3>
-				<p class="text-gray-600 text-sm">Add, edit, and manage customer
-					accounts</p>
 			</div>
-		</a> <a href="product?action=list" class="group">
-			<div
-				class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group-hover:border-orange-300">
-				<div class="flex items-center justify-between mb-4">
-					<div
-						class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-						<i class="fas fa-book text-green-600 text-xl"></i>
-					</div>
-					<i
-						class="fas fa-arrow-right text-gray-400 group-hover:text-orange-500 transition-colors duration-200"></i>
-				</div>
-				<h3 class="text-lg font-semibold text-gray-900 mb-2">Product
-					Management</h3>
-				<p class="text-gray-600 text-sm">Manage books and other products</p>
-			</div>
-		</a> <a href="bill?action=list" class="group">
-			<div
-				class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group-hover:border-orange-300">
-				<div class="flex items-center justify-between mb-4">
-					<div
-						class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-						<i class="fas fa-file-invoice-dollar text-purple-600 text-xl"></i>
-					</div>
-					<i
-						class="fas fa-arrow-right text-gray-400 group-hover:text-orange-500 transition-colors duration-200"></i>
-				</div>
-				<h3 class="text-lg font-semibold text-gray-900 mb-2">Billing
-					System</h3>
-				<p class="text-gray-600 text-sm">Create and manage customer
-					bills</p>
-			</div>
-		</a>
-
-		<c:if test="${sessionScope.role == 'admin'}">
-			<a href="user-management?action=list" class="group">
-				<div
-					class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group-hover:border-orange-300">
-					<div class="flex items-center justify-between mb-4">
-						<div
-							class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-							<i class="fas fa-user-cog text-orange-600 text-xl"></i>
+			<div class="grid grid-cols-2 gap-4 mb-6">
+				<div class="bg-green-50 rounded-lg p-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm text-gray-600">Current Month</p>
+							<p class="text-2xl font-bold text-green-600">$${revenueData.currentMonthRevenue}</p>
 						</div>
-						<i
-							class="fas fa-arrow-right text-gray-400 group-hover:text-orange-500 transition-colors duration-200"></i>
+						<i class="fas fa-chart-line text-green-500 text-xl"></i>
 					</div>
-					<h3 class="text-lg font-semibold text-gray-900 mb-2">User
-						Management</h3>
-					<p class="text-gray-600 text-sm">Manage system users and
-						permissions</p>
 				</div>
-			</a>
-		</c:if>
-
-		<a href="dashboard?action=help" class="group">
-			<div
-				class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 group-hover:border-orange-300">
-				<div class="flex items-center justify-between mb-4">
-					<div
-						class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-						<i class="fas fa-question-circle text-gray-600 text-xl"></i>
+				<div class="bg-blue-50 rounded-lg p-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm text-gray-600">Last Month</p>
+							<p class="text-2xl font-bold text-blue-600">$${revenueData.lastMonthRevenue}</p>
+						</div>
+						<i class="fas fa-chart-bar text-blue-500 text-xl"></i>
 					</div>
-					<i
-						class="fas fa-arrow-right text-gray-400 group-hover:text-orange-500 transition-colors duration-200"></i>
 				</div>
-				<h3 class="text-lg font-semibold text-gray-900 mb-2">Help &
-					Support</h3>
-				<p class="text-gray-600 text-sm">System usage guidelines and
-					support</p>
 			</div>
-		</a>
+			<div class="bg-gray-50 rounded-lg p-4">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600">Growth Rate</p>
+						<c:choose>
+							<c:when test="${revenueData.percentageChange >= 0}">
+								<p class="text-lg font-bold text-green-600">+${revenueData.percentageChange}%</p>
+							</c:when>
+							<c:otherwise>
+								<p class="text-lg font-bold text-red-600">${revenueData.percentageChange}%</p>
+							</c:otherwise>
+						</c:choose>
+					</div>
+					<c:choose>
+						<c:when test="${revenueData.percentageChange >= 0}">
+							<i class="fas fa-arrow-up text-green-500 text-xl"></i>
+						</c:when>
+						<c:otherwise>
+							<i class="fas fa-arrow-down text-red-500 text-xl"></i>
+						</c:otherwise>
+					</c:choose>
+				</div>
+			</div>
+		</div>
+
+		<!-- Quick Stats Summary -->
+		<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+			<h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Stats</h3>
+			<div class="space-y-4">
+				<div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+					<div>
+						<p class="text-sm text-gray-600">This Month Revenue</p>
+						<p class="text-lg font-bold text-green-600">$${quickStats.thisMonthRevenue}</p>
+					</div>
+					<i class="fas fa-dollar-sign text-green-500"></i>
+				</div>
+				<div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+					<div>
+						<p class="text-sm text-gray-600">Bills Generated</p>
+						<p class="text-lg font-bold text-blue-600">${quickStats.billsGenerated}</p>
+					</div>
+					<i class="fas fa-file-invoice text-blue-500"></i>
+				</div>
+				<div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+					<div>
+						<p class="text-sm text-gray-600">New Customers</p>
+						<p class="text-lg font-bold text-purple-600">${quickStats.newCustomers}</p>
+					</div>
+					<i class="fas fa-user-plus text-purple-500"></i>
+				</div>
+				<div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+					<div>
+						<p class="text-sm text-gray-600">Avg. Bill Value</p>
+						<p class="text-lg font-bold text-orange-600">$${quickStats.avgBillValue}</p>
+					</div>
+					<i class="fas fa-calculator text-orange-500"></i>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Recent Activity and Recent Bills -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+		<!-- Recent Activity Timeline -->
+		<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+			<div class="flex items-center justify-between mb-6">
+				<h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+				<a href="#" class="text-sm text-orange-600 hover:text-orange-700">View All</a>
+			</div>
+			<div class="space-y-4">
+				<div class="flex items-start space-x-3">
+					<div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-900">New bill generated</p>
+						<p class="text-xs text-gray-500">Bill #BILL-2024-001 for John Doe</p>
+						<p class="text-xs text-gray-400">2 hours ago</p>
+					</div>
+				</div>
+				<div class="flex items-start space-x-3">
+					<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-900">New customer added</p>
+						<p class="text-xs text-gray-500">Jane Smith registered</p>
+						<p class="text-xs text-gray-400">4 hours ago</p>
+					</div>
+				</div>
+				<div class="flex items-start space-x-3">
+					<div class="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-900">Product updated</p>
+						<p class="text-xs text-gray-500">"Advanced Mathematics" price updated</p>
+						<p class="text-xs text-gray-400">6 hours ago</p>
+					</div>
+				</div>
+				<div class="flex items-start space-x-3">
+					<div class="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-900">System backup</p>
+						<p class="text-xs text-gray-500">Daily backup completed successfully</p>
+						<p class="text-xs text-gray-400">1 day ago</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Recent Bills Table -->
+		<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+			<div class="flex items-center justify-between mb-6">
+				<h3 class="text-lg font-semibold text-gray-900">Recent Bills</h3>
+				<a href="bill?action=list" class="text-sm text-orange-600 hover:text-orange-700">View All</a>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="min-w-full">
+					<thead>
+						<tr class="border-b border-gray-200">
+							<th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bill ID</th>
+							<th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+							<th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+							<th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-200">
+						<c:forEach var="bill" items="${recentBills}">
+							<tr>
+								<td class="py-2 text-sm text-gray-900">${bill.billId}</td>
+								<td class="py-2 text-sm text-gray-600">${bill.customerName}</td>
+								<td class="py-2 text-sm font-medium text-green-600">$${bill.amount}</td>
+								<td class="py-2">
+									<c:choose>
+										<c:when test="${bill.status == 'paid'}">
+											<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Paid</span>
+										</c:when>
+										<c:when test="${bill.status == 'pending'}">
+											<span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+										</c:when>
+										<c:otherwise>
+											<span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">${bill.status}</span>
+										</c:otherwise>
+									</c:choose>
+								</td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- Top Customers and System Status -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+		<!-- Top Customers -->
+		<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+			<div class="flex items-center justify-between mb-6">
+				<h3 class="text-lg font-semibold text-gray-900">Top Customers</h3>
+				<a href="customer?action=list" class="text-sm text-orange-600 hover:text-orange-700">View All</a>
+			</div>
+			<div class="space-y-4">
+				<c:forEach var="customer" items="${topCustomers}" varStatus="status">
+					<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+						<div class="flex items-center space-x-3">
+							<c:choose>
+								<c:when test="${status.index == 0}">
+									<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+										<span class="text-sm font-medium text-blue-600">${customer.initials}</span>
+									</div>
+								</c:when>
+								<c:when test="${status.index == 1}">
+									<div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+										<span class="text-sm font-medium text-green-600">${customer.initials}</span>
+									</div>
+								</c:when>
+								<c:otherwise>
+									<div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+										<span class="text-sm font-medium text-purple-600">${customer.initials}</span>
+									</div>
+								</c:otherwise>
+							</c:choose>
+							<div>
+								<p class="text-sm font-medium text-gray-900">${customer.name}</p>
+								<p class="text-xs text-gray-500">${customer.billCount} bills • $${customer.totalRevenue} total</p>
+							</div>
+						</div>
+						<span class="text-sm font-medium text-green-600">$${customer.totalRevenue}</span>
+					</div>
+				</c:forEach>
+			</div>
+		</div>
+
+		<!-- System Status -->
+		<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+			<div class="flex items-center justify-between mb-6">
+				<h3 class="text-lg font-semibold text-gray-900">System Status</h3>
+				<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">${systemStatus.overallStatus}</span>
+			</div>
+			<div class="space-y-4">
+				<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+					<div class="flex items-center space-x-3">
+						<div class="w-3 h-3 bg-green-500 rounded-full"></div>
+						<span class="text-sm text-gray-900">Database Connection</span>
+					</div>
+					<span class="text-xs text-green-600">${systemStatus.databaseConnection}</span>
+				</div>
+				<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+					<div class="flex items-center space-x-3">
+						<div class="w-3 h-3 bg-green-500 rounded-full"></div>
+						<span class="text-sm text-gray-900">Web Server</span>
+					</div>
+					<span class="text-xs text-green-600">${systemStatus.webServer}</span>
+				</div>
+				<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+					<div class="flex items-center space-x-3">
+						<div class="w-3 h-3 bg-green-500 rounded-full"></div>
+						<span class="text-sm text-gray-900">File System</span>
+					</div>
+					<span class="text-xs text-green-600">${systemStatus.fileSystem}</span>
+				</div>
+				<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+					<div class="flex items-center space-x-3">
+						<div class="w-3 h-3 bg-green-500 rounded-full"></div>
+						<span class="text-sm text-gray-900">Backup System</span>
+					</div>
+					<span class="text-xs text-green-600">${systemStatus.backupSystem}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Quick Actions Footer -->
+	<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+		<h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<a href="bill?action=create" class="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors duration-200">
+				<i class="fas fa-plus-circle text-orange-600 text-xl mb-2"></i>
+				<span class="text-sm font-medium text-orange-700">Create Bill</span>
+			</a>
+			<a href="customer?action=add" class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+				<i class="fas fa-user-plus text-blue-600 text-xl mb-2"></i>
+				<span class="text-sm font-medium text-blue-700">Add Customer</span>
+			</a>
+			<a href="product?action=add" class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
+				<i class="fas fa-plus text-green-600 text-xl mb-2"></i>
+				<span class="text-sm font-medium text-green-700">Add Product</span>
+			</a>
+			<a href="dashboard?action=reports" class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200">
+				<i class="fas fa-chart-bar text-purple-600 text-xl mb-2"></i>
+				<span class="text-sm font-medium text-purple-700">View Reports</span>
+			</a>
+		</div>
 	</div>
 </div>
