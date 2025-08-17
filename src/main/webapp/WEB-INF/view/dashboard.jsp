@@ -203,7 +203,7 @@
 		<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
 			<div class="flex items-center justify-between mb-6">
 				<h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-				<a href="#" class="text-sm text-orange-600 hover:text-orange-700">View All</a>
+				<a href="activity?action=list" class="text-sm text-orange-600 hover:text-orange-700">View All</a>
 			</div>
 			<div class="space-y-4">
 				<c:choose>
