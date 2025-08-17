@@ -79,6 +79,8 @@ public class BillItem {
         calculateSubtotal();
     }
     
+
+    
     public BigDecimal getSubtotal() {
         return subtotal;
     }

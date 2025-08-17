@@ -332,6 +332,7 @@ body {
 				<th>Product</th>
 				<th>Quantity</th>
 				<th>Unit Price</th>
+				
 				<th>Subtotal</th>
 			</tr>
 		</thead>
@@ -343,6 +344,7 @@ body {
 					<td>${item.quantity}</td>
 					<td><fmt:formatNumber value="${item.unitPrice}"
 							type="currency" currencySymbol="Rs. " /></td>
+					
 					<td><strong><fmt:formatNumber
 								value="${item.subtotal}" type="currency" currencySymbol="Rs. " /></strong>
 					</td>
@@ -351,12 +353,32 @@ body {
 		</tbody>
 	</table>
 
-	<div class="total-section">
-		<h3>
-			Total Amount: <span class="total-amount"> <fmt:formatNumber
-					value="${bill.totalAmount}" type="currency" currencySymbol="Rs. " />
-			</span>
+	<!-- Bill Summary Section -->
+	<div class="bill-summary" style="margin: 30px 0; padding: 25px; background: #fff7ed; border-radius: 8px; border: 1px solid #fdba74;">
+		<h3 style="color: #ea580c; margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #fdba74; padding-bottom: 8px;">
+			Bill Summary
 		</h3>
+		<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+			<span style="color: #7c2d12; font-size: 14px;">Subtotal:</span>
+			<span style="color: #7c2d12; font-size: 14px; font-weight: bold;">
+				<fmt:formatNumber value="${bill.totalAmount + (bill.discount > 0 ? bill.totalAmount * bill.discount / 100 : 0)}" type="currency" currencySymbol="Rs. " />
+			</span>
+		</div>
+		<c:if test="${bill.discount > 0}">
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+				<span style="color: #7c2d12; font-size: 14px;">Discount (${bill.discount}%):</span>
+				<span style="color: #059669; font-size: 14px; font-weight: bold;">
+					- <fmt:formatNumber value="${bill.totalAmount * bill.discount / 100}" type="currency" currencySymbol="Rs. " />
+				</span>
+			</div>
+		</c:if>
+		<hr style="margin: 15px 0; border: none; border-top: 1px solid #fdba74;">
+		<div style="display: flex; justify-content: space-between; align-items: center;">
+			<span style="color: #ea580c; font-size: 18px; font-weight: bold;">Total Amount:</span>
+			<span style="color: #ea580c; font-size: 24px; font-weight: bold;">
+				<fmt:formatNumber value="${bill.totalAmount}" type="currency" currencySymbol="Rs. " />
+			</span>
+		</div>
 	</div>
 
 	<div class="footer">

@@ -9,16 +9,17 @@ import java.util.List;
 public class BillItemDAO {
     
     public boolean createBillItem(BillItem item) throws SQLException {
-        String sql = "INSERT INTO BillItem (bill_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO BillItem (bill_id, product_id, product_name, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnectionFactory.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setInt(1, item.getBillId());
             pstmt.setInt(2, item.getProductId());
-            pstmt.setInt(3, item.getQuantity());
-            pstmt.setBigDecimal(4, item.getUnitPrice());
-            pstmt.setBigDecimal(5, item.getSubtotal());
+            pstmt.setString(3, item.getProductName());
+            pstmt.setInt(4, item.getQuantity());
+            pstmt.setBigDecimal(5, item.getUnitPrice());
+            pstmt.setBigDecimal(6, item.getSubtotal());
             
             int affectedRows = pstmt.executeUpdate();
             
@@ -36,7 +37,7 @@ public class BillItemDAO {
     }
     
     public boolean createBillItems(List<BillItem> items) throws SQLException {
-        String sql = "INSERT INTO BillItem (bill_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO BillItem (bill_id, product_id, product_name, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnectionFactory.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -44,9 +45,10 @@ public class BillItemDAO {
             for (BillItem item : items) {
                 pstmt.setInt(1, item.getBillId());
                 pstmt.setInt(2, item.getProductId());
-                pstmt.setInt(3, item.getQuantity());
-                pstmt.setBigDecimal(4, item.getUnitPrice());
-                pstmt.setBigDecimal(5, item.getSubtotal());
+                pstmt.setString(3, item.getProductName());
+                pstmt.setInt(4, item.getQuantity());
+                pstmt.setBigDecimal(5, item.getUnitPrice());
+                pstmt.setBigDecimal(6, item.getSubtotal());
                 
                 pstmt.addBatch();
             }
@@ -66,10 +68,7 @@ public class BillItemDAO {
     }
     
     public List<BillItem> getBillItemsByBillId(int billId) throws SQLException {
-        String sql = "SELECT bi.*, p.name as product_name " +
-                    "FROM BillItem bi " +
-                    "JOIN Product p ON bi.product_id = p.product_id " +
-                    "WHERE bi.bill_id = ?";
+        String sql = "SELECT bi.* FROM BillItem bi WHERE bi.bill_id = ?";
         
         List<BillItem> items = new ArrayList<>();
         

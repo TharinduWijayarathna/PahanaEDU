@@ -132,6 +132,7 @@
 										class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">
 										<i class="fas fa-tag mr-1"></i>Unit Price
 									</th>
+
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">
 										<i class="fas fa-calculator mr-1"></i>Subtotal
@@ -147,6 +148,7 @@
 										<td class="px-6 py-4 text-gray-700"><fmt:formatNumber
 												value="${item.unitPrice}" type="currency"
 												currencySymbol="Rs. " /></td>
+
 										<td class="px-6 py-4 text-gray-900 font-semibold"><fmt:formatNumber
 												value="${item.subtotal}" type="currency"
 												currencySymbol="Rs. " /></td>
@@ -165,14 +167,36 @@
 			</c:choose>
 		</div>
 
-		<!-- Total Amount -->
-		<div
-			class="bg-orange-50 border border-orange-200 rounded-lg p-4 text-right">
-			<h3 class="text-lg font-semibold text-gray-900">
-				Total Amount: <span class="text-orange-600 text-xl"> <fmt:formatNumber
-						value="${bill.totalAmount}" type="currency" currencySymbol="Rs. " />
-				</span>
+		<!-- Bill Summary -->
+		<div class="bg-gray-50 rounded-lg p-6 mb-6">
+			<h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+				<i class="fas fa-calculator mr-2 text-orange-600"></i>Bill Summary
 			</h3>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div class="bg-white rounded-lg p-4 border border-gray-200">
+					<div class="flex justify-between items-center mb-2">
+						<span class="text-sm text-gray-600">Subtotal:</span>
+						<span class="text-sm text-gray-900">
+							<fmt:formatNumber value="${bill.totalAmount + (bill.discount > 0 ? bill.totalAmount * bill.discount / 100 : 0)}" type="currency" currencySymbol="Rs. " />
+						</span>
+					</div>
+					<c:if test="${bill.discount > 0}">
+						<div class="flex justify-between items-center mb-2">
+							<span class="text-sm text-gray-600">Discount (${bill.discount}%):</span>
+							<span class="text-sm text-green-600">
+								- <fmt:formatNumber value="${bill.totalAmount * bill.discount / 100}" type="currency" currencySymbol="Rs. " />
+							</span>
+						</div>
+					</c:if>
+					<hr class="my-2">
+					<div class="flex justify-between items-center">
+						<span class="text-lg font-semibold text-gray-900">Total Amount:</span>
+						<span class="text-xl font-bold text-orange-600">
+							<fmt:formatNumber value="${bill.totalAmount}" type="currency" currencySymbol="Rs. " />
+						</span>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<!-- Action Buttons -->

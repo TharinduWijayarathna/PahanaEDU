@@ -11,15 +11,18 @@ import java.util.List;
 public class BillDAO {
     
     public boolean createBill(Bill bill) throws SQLException {
-        String sql = "INSERT INTO Bill (customer_id, bill_date, total_amount, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Bill (customer_id, customer_name, account_number, bill_date, total_amount, discount, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnectionFactory.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setInt(1, bill.getCustomerId());
-            pstmt.setTimestamp(2, Timestamp.valueOf(bill.getBillDate()));
-            pstmt.setBigDecimal(3, bill.getTotalAmount());
-            pstmt.setString(4, bill.getStatus());
+            pstmt.setString(2, bill.getCustomerName());
+            pstmt.setString(3, bill.getAccountNumber());
+            pstmt.setTimestamp(4, Timestamp.valueOf(bill.getBillDate()));
+            pstmt.setBigDecimal(5, bill.getTotalAmount());
+            pstmt.setBigDecimal(6, bill.getDiscount());
+            pstmt.setString(7, bill.getStatus());
             
             int affectedRows = pstmt.executeUpdate();
             
@@ -56,6 +59,7 @@ public class BillDAO {
                 bill.setAccountNumber(rs.getString("account_number"));
                 bill.setBillDate(rs.getTimestamp("bill_date").toLocalDateTime());
                 bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+                bill.setDiscount(rs.getBigDecimal("discount"));
                 bill.setStatus(rs.getString("status"));
                 
                 // Load bill items
@@ -92,6 +96,7 @@ public class BillDAO {
                 bill.setAccountNumber(rs.getString("account_number"));
                 bill.setBillDate(rs.getTimestamp("bill_date").toLocalDateTime());
                 bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+                bill.setDiscount(rs.getBigDecimal("discount"));
                 bill.setStatus(rs.getString("status"));
                 
                 bills.add(bill);
@@ -123,6 +128,7 @@ public class BillDAO {
                 bill.setAccountNumber(rs.getString("account_number"));
                 bill.setBillDate(rs.getTimestamp("bill_date").toLocalDateTime());
                 bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+                bill.setDiscount(rs.getBigDecimal("discount"));
                 bill.setStatus(rs.getString("status"));
                 
                 bills.add(bill);
@@ -184,10 +190,7 @@ public class BillDAO {
     }
     
     private List<BillItem> getBillItems(int billId) throws SQLException {
-        String sql = "SELECT bi.*, p.name as product_name " +
-                    "FROM BillItem bi " +
-                    "JOIN Product p ON bi.product_id = p.product_id " +
-                    "WHERE bi.bill_id = ?";
+        String sql = "SELECT bi.* FROM BillItem bi WHERE bi.bill_id = ?";
         
         List<BillItem> items = new ArrayList<>();
         
