@@ -20,6 +20,8 @@ import edu.pahana.model.Product;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 @WebServlet("/product")
 public class ProductController extends HttpServlet {
@@ -85,17 +87,36 @@ public class ProductController extends HttpServlet {
 	private void listProducts(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		List<Product> productList = new ArrayList<Product>();
 		try {
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
 			String searchTerm = request.getParameter("search");
+
+			List<Product> productList;
+			int totalItems;
+
 			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-				// Search products
-				productList = productService.searchProducts(searchTerm.trim());
+				// Search products with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				productList = productService.searchProductsPaginated(searchTerm.trim(), offset, pageSize);
+				totalItems = productService.getProductSearchCount(searchTerm.trim());
 			} else {
-				// Get all products
-				productList = productService.getAllProducts();
+				// Get all products with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				productList = productService.getProductsPaginated(offset, pageSize);
+				totalItems = productService.getProductCount();
 			}
+
+			// Create pagination data
+			PaginationData paginationData = PaginationUtil.createPaginationData(productList, page, pageSize,
+					totalItems);
+
+			// Set attributes for JSP
 			request.setAttribute("products", productList);
+			request.setAttribute("pagination", paginationData);
+			request.setAttribute("searchTerm", searchTerm != null ? searchTerm.trim() : "");
+
 		} catch (SQLException e) {
 			request.setAttribute("errorMessage", e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);

@@ -104,6 +104,52 @@ public class BillService {
 		return billDAO.searchBills(searchTerm);
 	}
 
+	/**
+	 * Gets paginated bills
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of bills for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> getBillsPaginated(int offset, int limit) throws SQLException {
+		return billDAO.getBillsPaginated(offset, limit);
+	}
+
+	/**
+	 * Searches bills with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching bills for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> searchBillsPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		return billDAO.searchBillsPaginated(searchTerm, offset, limit);
+	}
+
+	/**
+	 * Gets the total count of bills
+	 * 
+	 * @return Total number of bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getBillCount() throws SQLException {
+		return billDAO.getBillCount();
+	}
+
+	/**
+	 * Gets the count of bills matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getBillSearchCount(String searchTerm) throws SQLException {
+		return billDAO.getBillSearchCount(searchTerm);
+	}
+
 	public boolean updateBillStatus(int billId, String status) throws SQLException {
 		return billDAO.updateBillStatus(billId, status);
 	}

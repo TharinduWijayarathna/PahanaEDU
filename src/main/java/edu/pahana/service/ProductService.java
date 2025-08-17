@@ -51,6 +51,52 @@ public class ProductService {
 		return productDAO.searchProducts(searchTerm);
 	}
 
+	/**
+	 * Gets paginated products
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of products for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Product> getProductsPaginated(int offset, int limit) throws SQLException {
+		return productDAO.getProductsPaginated(offset, limit);
+	}
+
+	/**
+	 * Searches products with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching products for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Product> searchProductsPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		return productDAO.searchProductsPaginated(searchTerm, offset, limit);
+	}
+
+	/**
+	 * Gets the total count of products
+	 * 
+	 * @return Total number of products
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getProductCount() throws SQLException {
+		return productDAO.getProductCount();
+	}
+
+	/**
+	 * Gets the count of products matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching products
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getProductSearchCount(String searchTerm) throws SQLException {
+		return productDAO.getProductSearchCount(searchTerm);
+	}
+
 	public Product getProductById(int productId) throws SQLException {
 		return productDAO.getProductById(productId);
 	}

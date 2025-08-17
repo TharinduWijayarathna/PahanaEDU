@@ -165,6 +165,17 @@ pageContext.setAttribute("timeFormatter", timeFormatter);
 					   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500">
 			</div>
 
+			<!-- Page Size Selector -->
+			<div>
+				<label for="pageSize" class="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
+				<select name="pageSize" id="pageSize" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+					<option value="10" ${empty pagination ? 'selected' : (pagination.pageSize == 10 ? 'selected' : '')}>10</option>
+					<option value="25" ${empty pagination ? '' : (pagination.pageSize == 25 ? 'selected' : '')}>25</option>
+					<option value="50" ${empty pagination ? '' : (pagination.pageSize == 50 ? 'selected' : '')}>50</option>
+					<option value="100" ${empty pagination ? '' : (pagination.pageSize == 100 ? 'selected' : '')}>100</option>
+				</select>
+			</div>
+
 			<!-- Filter Buttons -->
 			<div class="md:col-span-2 flex items-end space-x-4">
 				<button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
@@ -185,8 +196,8 @@ pageContext.setAttribute("timeFormatter", timeFormatter);
 			<div class="flex items-center justify-between">
 				<h3 class="text-lg font-semibold text-gray-900">
 					Activities 
-					<c:if test="${not empty activities}">
-						<span class="text-sm font-normal text-gray-500">(${activities.size()} results)</span>
+					<c:if test="${not empty pagination}">
+						<span class="text-sm font-normal text-gray-500">(${pagination.totalItems} results)</span>
 					</c:if>
 				</h3>
 				<div class="flex items-center space-x-2">
@@ -283,6 +294,13 @@ pageContext.setAttribute("timeFormatter", timeFormatter);
 				</c:otherwise>
 			</c:choose>
 		</div>
+		
+
+		
+		<!-- Pagination Controls -->
+		<c:if test="${not empty pagination and pagination.totalPages > 1}">
+			<%@ include file="pagination.jsp" %>
+		</c:if>
 	</div>
 </div>
 
@@ -293,7 +311,9 @@ function clearFilters() {
 	document.getElementById('startDate').value = '';
 	document.getElementById('endDate').value = '';
 	document.getElementById('search').value = '';
-	window.location.href = 'activity?action=list';
+	// Preserve current page size when clearing filters
+	const currentPageSize = document.getElementById('pageSize').value;
+	window.location.href = 'activity?action=list&pageSize=' + currentPageSize;
 }
 
 function exportActivities() {

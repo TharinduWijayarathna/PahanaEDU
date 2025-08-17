@@ -34,7 +34,7 @@ public class ProductDAO {
 
 	public List<Product> getAllProducts() throws SQLException {
 		List<Product> products = new ArrayList<>();
-		String query = "SELECT * FROM Product";
+		String query = "SELECT * FROM Product ORDER BY name";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		Statement statement = connection.createStatement();
@@ -58,6 +58,62 @@ public class ProductDAO {
 	}
 
 	/**
+	 * Gets paginated products from the database
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of products for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Product> getProductsPaginated(int offset, int limit) throws SQLException {
+		List<Product> products = new ArrayList<>();
+		String query = "SELECT * FROM Product ORDER BY name LIMIT ? OFFSET ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		statement.setInt(1, limit);
+		statement.setInt(2, offset);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			int id = resultSet.getInt("product_id");
+			String name = resultSet.getString("name");
+			double price = resultSet.getDouble("price");
+			String desc = resultSet.getString("description");
+			int quantity = resultSet.getInt("stock_quantity");
+			String isbn = resultSet.getString("isbn");
+			String author = resultSet.getString("author");
+			String publisher = resultSet.getString("publisher");
+			Date pubDate = resultSet.getDate("publication_date");
+
+			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			products.add(product);
+		}
+
+		return products;
+	}
+
+	/**
+	 * Gets the total count of products
+	 * 
+	 * @return Total number of products
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getProductCount() throws SQLException {
+		String query = "SELECT COUNT(*) FROM Product";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(query);
+
+		if (resultSet.next()) {
+			return resultSet.getInt(1);
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Searches products by name, author, or ISBN
 	 * 
 	 * @param searchTerm The search term to look for
@@ -66,7 +122,7 @@ public class ProductDAO {
 	 */
 	public List<Product> searchProducts(String searchTerm) throws SQLException {
 		List<Product> products = new ArrayList<>();
-		String query = "SELECT * FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ?";
+		String query = "SELECT * FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ? ORDER BY name";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
@@ -92,6 +148,72 @@ public class ProductDAO {
 		}
 
 		return products;
+	}
+
+	/**
+	 * Searches products by name, author, or ISBN with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching products for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Product> searchProductsPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		List<Product> products = new ArrayList<>();
+		String query = "SELECT * FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ? ORDER BY name LIMIT ? OFFSET ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		statement.setInt(4, limit);
+		statement.setInt(5, offset);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			int id = resultSet.getInt("product_id");
+			String name = resultSet.getString("name");
+			String desc = resultSet.getString("description");
+			double price = resultSet.getDouble("price");
+			int quantity = resultSet.getInt("stock_quantity");
+			String isbn = resultSet.getString("isbn");
+			String author = resultSet.getString("author");
+			String publisher = resultSet.getString("publisher");
+			Date pubDate = resultSet.getDate("publication_date");
+
+			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			products.add(product);
+		}
+
+		return products;
+	}
+
+	/**
+	 * Gets the count of products matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching products
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getProductSearchCount(String searchTerm) throws SQLException {
+		String query = "SELECT COUNT(*) FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		if (resultSet.next()) {
+			return resultSet.getInt(1);
+		}
+
+		return 0;
 	}
 
 	public Product getProductById(int productId) throws SQLException {

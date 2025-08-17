@@ -46,16 +46,24 @@
 					placeholder="Search users by username or role..."
 					class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
 			</div>
-			<button type="submit"
-				class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
-				<i class="fas fa-search mr-2"></i>Search
-			</button>
-			<c:if test="${not empty param.search}">
-				<a href="user-management?action=list"
-					class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
-					<i class="fas fa-times mr-2"></i>Clear
-				</a>
-			</c:if>
+			<div class="flex items-center space-x-2">
+				<select name="pageSize" class="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+					<option value="10" ${param.pageSize == '10' || empty param.pageSize ? 'selected' : ''}>10 per page</option>
+					<option value="25" ${param.pageSize == '25' ? 'selected' : ''}>25 per page</option>
+					<option value="50" ${param.pageSize == '50' ? 'selected' : ''}>50 per page</option>
+					<option value="100" ${param.pageSize == '100' ? 'selected' : ''}>100 per page</option>
+				</select>
+				<button type="submit"
+					class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
+					<i class="fas fa-search mr-2"></i>Search
+				</button>
+				<c:if test="${not empty param.search}">
+					<a href="user-management?action=list"
+						class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
+						<i class="fas fa-times mr-2"></i>Clear
+					</a>
+				</c:if>
+			</div>
 		</form>
 	</div>
 
@@ -68,7 +76,7 @@
 					Search results for "<strong>${param.search}</strong>" - 
 					<c:choose>
 						<c:when test="${empty users}">No users found</c:when>
-						<c:otherwise>${fn:length(users)} user(s) found</c:otherwise>
+						<c:otherwise>${pagination.totalItems} user(s) found</c:otherwise>
 					</c:choose>
 				</span>
 			</div>
@@ -159,4 +167,8 @@
 			</div>
 		</c:if>
 	</div>
+	
+	<!-- Pagination -->
+	<c:set var="paginationUrl" value="user-management" />
+	<%@ include file="../shared/pagination.jsp" %>
 </div>

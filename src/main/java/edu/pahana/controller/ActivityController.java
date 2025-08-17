@@ -17,6 +17,8 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.Activity;
 import edu.pahana.service.ActivityService;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 /**
  * Controller for handling activity viewing and filtering operations.
@@ -56,11 +58,16 @@ public class ActivityController extends HttpServlet {
 	}
 
 	/**
-	 * Lists all activities with optional filters
+	 * Lists all activities with optional filters and pagination
 	 */
 	private void listActivities(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
+			int offset = PaginationUtil.calculateOffset(page, pageSize);
+
 			// Get filter parameters
 			String activityType = request.getParameter("activityType");
 			String username = request.getParameter("username");
@@ -69,42 +76,70 @@ public class ActivityController extends HttpServlet {
 			String searchTerm = request.getParameter("search");
 
 			List<Activity> activities;
+			int totalItems;
 
-			// Apply filters
+			// Apply filters with pagination
 			if (activityType != null && !activityType.trim().isEmpty()) {
 				activities = activityService.getActivitiesByType(activityType.trim());
+				totalItems = activities.size();
+				// Apply pagination to filtered results
+				int startIndex = offset;
+				int endIndex = Math.min(startIndex + pageSize, activities.size());
+				if (startIndex < activities.size()) {
+					activities = activities.subList(startIndex, endIndex);
+				} else {
+					activities = List.of();
+				}
 			} else if (username != null && !username.trim().isEmpty()) {
 				activities = activityService.getActivitiesByUsername(username.trim());
+				totalItems = activities.size();
+				// Apply pagination to filtered results
+				int startIndex = offset;
+				int endIndex = Math.min(startIndex + pageSize, activities.size());
+				if (startIndex < activities.size()) {
+					activities = activities.subList(startIndex, endIndex);
+				} else {
+					activities = List.of();
+				}
 			} else if (startDate != null && !startDate.trim().isEmpty() && endDate != null
 					&& !endDate.trim().isEmpty()) {
 				try {
 					LocalDateTime startDateTime = LocalDateTime.parse(startDate + "T00:00:00");
 					LocalDateTime endDateTime = LocalDateTime.parse(endDate + "T23:59:59");
 					activities = activityService.getActivitiesByDateRange(startDateTime, endDateTime);
+					totalItems = activities.size();
+					// Apply pagination to filtered results
+					int startIndex = offset;
+					int endIndex = Math.min(startIndex + pageSize, activities.size());
+					if (startIndex < activities.size()) {
+						activities = activities.subList(startIndex, endIndex);
+					} else {
+						activities = List.of();
+					}
 				} catch (DateTimeParseException e) {
 					request.setAttribute("error", "Invalid date format. Please use YYYY-MM-DD format.");
-					activities = activityService.getAllActivities();
+					activities = activityService.getActivitiesPaginated(offset, pageSize);
+					totalItems = activityService.getActivityCount();
 				}
 			} else if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-				// For search, we'll get all activities and filter in memory
-				// In a real application, you'd want to implement search in the DAO
-				activities = activityService.getAllActivities();
-				activities = activities.stream()
-						.filter(activity -> activity.getDescription().toLowerCase().contains(searchTerm.toLowerCase())
-								|| (activity.getEntityName() != null
-										&& activity.getEntityName().toLowerCase().contains(searchTerm.toLowerCase()))
-								|| activity.getUsername().toLowerCase().contains(searchTerm.toLowerCase()))
-						.toList();
+				// Use paginated search
+				activities = activityService.searchActivitiesPaginated(searchTerm, offset, pageSize);
+				totalItems = activityService.getActivitySearchCount(searchTerm);
 			} else {
-				// Get all activities
-				activities = activityService.getAllActivities();
+				// Get paginated activities
+				activities = activityService.getActivitiesPaginated(offset, pageSize);
+				totalItems = activityService.getActivityCount();
 			}
+
+			// Create pagination data
+			PaginationData pagination = PaginationUtil.createPaginationData(activities, page, pageSize, totalItems);
 
 			// Get activity statistics for the filter panel
 			Map<String, Object> activityStats = activityService.getActivityStatistics();
 
 			// Set attributes
 			request.setAttribute("activities", activities);
+			request.setAttribute("pagination", pagination);
 			request.setAttribute("activityStats", activityStats);
 			request.setAttribute("filterActivityType", activityType);
 			request.setAttribute("filterUsername", username);

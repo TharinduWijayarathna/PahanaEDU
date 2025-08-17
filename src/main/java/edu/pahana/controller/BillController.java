@@ -9,6 +9,8 @@ import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -102,16 +104,34 @@ public class BillController extends HttpServlet {
 			throws ServletException, IOException {
 
 		try {
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
 			String searchTerm = request.getParameter("search");
+
 			List<Bill> bills;
+			int totalItems;
+
 			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-				// Search bills
-				bills = billService.searchBills(searchTerm.trim());
+				// Search bills with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				bills = billService.searchBillsPaginated(searchTerm.trim(), offset, pageSize);
+				totalItems = billService.getBillSearchCount(searchTerm.trim());
 			} else {
-				// Get all bills
-				bills = billService.getAllBills();
+				// Get all bills with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				bills = billService.getBillsPaginated(offset, pageSize);
+				totalItems = billService.getBillCount();
 			}
+
+			// Create pagination data
+			PaginationData paginationData = PaginationUtil.createPaginationData(bills, page, pageSize, totalItems);
+
+			// Set attributes for JSP
 			request.setAttribute("bills", bills);
+			request.setAttribute("pagination", paginationData);
+			request.setAttribute("searchTerm", searchTerm != null ? searchTerm.trim() : "");
+
 		} catch (Exception e) {
 			request.setAttribute("error", "Error loading bills: " + e.getMessage());
 		}

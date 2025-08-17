@@ -130,7 +130,7 @@ public class UserDAO {
 	 */
 	public List<User> getAllUsers() throws SQLException {
 		List<User> users = new ArrayList<>();
-		String query = "SELECT * FROM User";
+		String query = "SELECT * FROM User ORDER BY username";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		Statement statement = connection.createStatement();
@@ -150,6 +150,57 @@ public class UserDAO {
 	}
 
 	/**
+	 * Gets paginated users from the database
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of users for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> getUsersPaginated(int offset, int limit) throws SQLException {
+		List<User> users = new ArrayList<>();
+		String query = "SELECT * FROM User ORDER BY username LIMIT ? OFFSET ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		statement.setInt(1, limit);
+		statement.setInt(2, offset);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			User user = new User();
+			user.setUserId(resultSet.getInt("user_id"));
+			user.setUsername(resultSet.getString("username"));
+			user.setPassword(resultSet.getString("password"));
+			user.setRole(resultSet.getString("role"));
+			user.setCreatedAt(resultSet.getTimestamp("created_at"));
+			users.add(user);
+		}
+
+		return users;
+	}
+
+	/**
+	 * Gets the total count of users
+	 * 
+	 * @return Total number of users
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getUserCount() throws SQLException {
+		String query = "SELECT COUNT(*) FROM User";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(query);
+
+		if (resultSet.next()) {
+			return resultSet.getInt(1);
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Searches users by username or role
 	 * 
 	 * @param searchTerm The search term to look for
@@ -158,7 +209,7 @@ public class UserDAO {
 	 */
 	public List<User> searchUsers(String searchTerm) throws SQLException {
 		List<User> users = new ArrayList<>();
-		String query = "SELECT * FROM User WHERE username LIKE ? OR role LIKE ?";
+		String query = "SELECT * FROM User WHERE username LIKE ? OR role LIKE ? ORDER BY username";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
@@ -178,6 +229,65 @@ public class UserDAO {
 		}
 
 		return users;
+	}
+
+	/**
+	 * Searches users by username or role with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching users for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> searchUsersPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		List<User> users = new ArrayList<>();
+		String query = "SELECT * FROM User WHERE username LIKE ? OR role LIKE ? ORDER BY username LIMIT ? OFFSET ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setInt(3, limit);
+		statement.setInt(4, offset);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			User user = new User();
+			user.setUserId(resultSet.getInt("user_id"));
+			user.setUsername(resultSet.getString("username"));
+			user.setPassword(resultSet.getString("password"));
+			user.setRole(resultSet.getString("role"));
+			user.setCreatedAt(resultSet.getTimestamp("created_at"));
+			users.add(user);
+		}
+
+		return users;
+	}
+
+	/**
+	 * Gets the count of users matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching users
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getUserSearchCount(String searchTerm) throws SQLException {
+		String query = "SELECT COUNT(*) FROM User WHERE username LIKE ? OR role LIKE ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		if (resultSet.next()) {
+			return resultSet.getInt(1);
+		}
+
+		return 0;
 	}
 
 	/**

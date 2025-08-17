@@ -17,6 +17,8 @@ import edu.pahana.model.Customer;
 import edu.pahana.service.CustomerService;
 import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 /**
  * Controller for handling customer-related requests. Manages customer listing,
@@ -92,21 +94,41 @@ public class CustomerController extends HttpServlet {
 	}
 
 	/**
-	 * Lists all customers or searches customers based on search parameter
+	 * Lists all customers or searches customers based on search parameter with
+	 * pagination
 	 */
 	private void listCustomers(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		List<Customer> customerList = new ArrayList<>();
 		try {
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
 			String searchTerm = request.getParameter("search");
+
+			List<Customer> customerList;
+			int totalItems;
+
 			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-				// Search customers
-				customerList = customerService.searchCustomers(searchTerm.trim());
+				// Search customers with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				customerList = customerService.searchCustomersPaginated(searchTerm.trim(), offset, pageSize);
+				totalItems = customerService.getCustomerSearchCount(searchTerm.trim());
 			} else {
-				// Get all customers
-				customerList = customerService.getAllCustomers();
+				// Get all customers with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				customerList = customerService.getCustomersPaginated(offset, pageSize);
+				totalItems = customerService.getCustomerCount();
 			}
+
+			// Create pagination data
+			PaginationData paginationData = PaginationUtil.createPaginationData(customerList, page, pageSize,
+					totalItems);
+
+			// Set attributes for JSP
 			request.setAttribute("customers", customerList);
+			request.setAttribute("pagination", paginationData);
+			request.setAttribute("searchTerm", searchTerm != null ? searchTerm.trim() : "");
+
 		} catch (SQLException e) {
 			request.setAttribute("errorMessage", e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
