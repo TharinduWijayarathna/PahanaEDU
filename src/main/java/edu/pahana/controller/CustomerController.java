@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.Customer;
 import edu.pahana.service.CustomerService;
+import edu.pahana.validation.ValidationUtils;
 
 /**
  * Controller for handling customer-related requests.
@@ -119,13 +121,22 @@ public class CustomerController extends HttpServlet {
         String address = request.getParameter("address");
         String telephone = request.getParameter("telephone");
         
+        // Sanitize inputs
+        accountNumber = ValidationUtils.sanitizeString(accountNumber);
+        name = ValidationUtils.sanitizeString(name);
+        address = ValidationUtils.sanitizeString(address);
+        telephone = ValidationUtils.sanitizeString(telephone);
+        
         // Validate input
-        if (accountNumber == null || accountNumber.trim().isEmpty() ||
-            name == null || name.trim().isEmpty() ||
-            address == null || address.trim().isEmpty() ||
-            telephone == null || telephone.trim().isEmpty()) {
-            
-            request.setAttribute("errorMessage", "All fields are required");
+        Map<String, String> validationErrors = ValidationUtils.validateCustomer(accountNumber, name, address, telephone);
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("accountNumber", accountNumber);
+            request.setAttribute("name", name);
+            request.setAttribute("address", address);
+            request.setAttribute("telephone", telephone);
             request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
             return;
         }
@@ -140,13 +151,20 @@ public class CustomerController extends HttpServlet {
                 response.sendRedirect("customer?action=list");
             } else {
                 // Customer addition failed (likely account number already exists)
-                request.setAttribute("errorMessage", "Account number already exists");
-                request.setAttribute("customer", customer);
+                request.setAttribute("error", "Account number already exists");
+                request.setAttribute("accountNumber", accountNumber);
+                request.setAttribute("name", name);
+                request.setAttribute("address", address);
+                request.setAttribute("telephone", telephone);
                 request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+            request.setAttribute("error", "Database error: " + e.getMessage());
+            request.setAttribute("accountNumber", accountNumber);
+            request.setAttribute("name", name);
+            request.setAttribute("address", address);
+            request.setAttribute("telephone", telephone);
+            request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
         }
     }
     
@@ -175,13 +193,23 @@ public class CustomerController extends HttpServlet {
         String address = request.getParameter("address");
         String telephone = request.getParameter("telephone");
         
+        // Sanitize inputs
+        accountNumber = ValidationUtils.sanitizeString(accountNumber);
+        name = ValidationUtils.sanitizeString(name);
+        address = ValidationUtils.sanitizeString(address);
+        telephone = ValidationUtils.sanitizeString(telephone);
+        
         // Validate input
-        if (accountNumber == null || accountNumber.trim().isEmpty() ||
-            name == null || name.trim().isEmpty() ||
-            address == null || address.trim().isEmpty() ||
-            telephone == null || telephone.trim().isEmpty()) {
-            
-            request.setAttribute("errorMessage", "All fields are required");
+        Map<String, String> validationErrors = ValidationUtils.validateCustomer(accountNumber, name, address, telephone);
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("customerId", customerId);
+            request.setAttribute("accountNumber", accountNumber);
+            request.setAttribute("name", name);
+            request.setAttribute("address", address);
+            request.setAttribute("telephone", telephone);
             request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
             return;
         }
@@ -196,13 +224,22 @@ public class CustomerController extends HttpServlet {
                 response.sendRedirect("customer?action=list");
             } else {
                 // Customer update failed (likely account number already exists for another customer)
-                request.setAttribute("errorMessage", "Account number already exists for another customer");
-                request.setAttribute("customer", customer);
+                request.setAttribute("error", "Account number already exists for another customer");
+                request.setAttribute("customerId", customerId);
+                request.setAttribute("accountNumber", accountNumber);
+                request.setAttribute("name", name);
+                request.setAttribute("address", address);
+                request.setAttribute("telephone", telephone);
                 request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+            request.setAttribute("error", "Database error: " + e.getMessage());
+            request.setAttribute("customerId", customerId);
+            request.setAttribute("accountNumber", accountNumber);
+            request.setAttribute("name", name);
+            request.setAttribute("address", address);
+            request.setAttribute("telephone", telephone);
+            request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
         }
     }
     

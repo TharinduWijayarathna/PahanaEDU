@@ -18,6 +18,15 @@
 	</div>
 
 	<!-- Alerts -->
+	<c:if test="${not empty success}">
+		<div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+			<div class="flex items-center">
+				<i class="fas fa-check-circle text-green-500 mr-2"></i> <span
+					class="text-green-800">${success}</span>
+			</div>
+		</div>
+	</c:if>
+
 	<c:if test="${not empty error}">
 		<div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
 			<div class="flex items-center">
@@ -38,13 +47,16 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-user mr-2"></i>Select Customer
 				</label> <select name="customerId" id="customerId" required
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					class="w-full px-4 py-3 border ${fieldErrors.customerId != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 					<option value="">Choose a customer...</option>
 					<c:forEach var="customer" items="${customers}">
-						<option value="${customer.customerId}">${customer.name}
+						<option value="${customer.customerId}" ${customerId == customer.customerId ? 'selected' : ''}>${customer.name}
 							(${customer.accountNumber})</option>
 					</c:forEach>
 				</select>
+				<c:if test="${fieldErrors.customerId != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.customerId}</p>
+				</c:if>
 			</div>
 
 			<!-- Bill Items Section -->
@@ -58,7 +70,7 @@
 						class="grid grid-cols-12 gap-3 item-row bg-orange-50 border border-orange-200 rounded-lg p-3">
 						<div class="col-span-12 md:col-span-5">
 							<select name="productId" required
-								class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+								class="w-full px-3 py-2 border ${fieldErrors.productId != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 								<option value="">Select Product...</option>
 								<c:forEach var="product" items="${products}">
 									<option value="${product.productId}"
@@ -66,11 +78,17 @@
 										${product.price}</option>
 								</c:forEach>
 							</select>
+							<c:if test="${fieldErrors.productId != null}">
+								<p class="mt-1 text-sm text-red-600">${fieldErrors.productId}</p>
+							</c:if>
 						</div>
 						<div class="col-span-6 md:col-span-2">
 							<input type="number" name="quantity" min="1" value="1" required
-								class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200"
+								class="w-full px-3 py-2 border ${fieldErrors.quantity != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200"
 								placeholder="Qty">
+							<c:if test="${fieldErrors.quantity != null}">
+								<p class="mt-1 text-sm text-red-600">${fieldErrors.quantity}</p>
+							</c:if>
 						</div>
 						<div class="col-span-6 md:col-span-2">
 							<input type="text"

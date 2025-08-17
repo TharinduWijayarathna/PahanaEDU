@@ -2,6 +2,9 @@ package edu.pahana.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.User;
 import edu.pahana.service.UserService;
+import edu.pahana.validation.ValidationUtils;
 
 /**
  * Controller for handling authentication-related requests.
@@ -101,6 +105,21 @@ public class AuthController extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         
+        // Sanitize inputs
+        username = ValidationUtils.sanitizeString(username);
+        password = ValidationUtils.sanitizeString(password);
+        
+        // Validate login inputs
+        Map<String, String> validationErrors = ValidationUtils.validateLogin(username, password);
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("username", username); // Preserve username for form
+            request.getRequestDispatcher("WEB-INF/view/auth/login.jsp").forward(request, response);
+            return;
+        }
+        
         try {
             User user = userService.authenticate(username, password);
             
@@ -115,12 +134,14 @@ public class AuthController extends HttpServlet {
                 response.sendRedirect("dashboard");
             } else {
                 // Authentication failed
-                request.setAttribute("errorMessage", "Invalid username or password");
+                request.setAttribute("error", "Invalid username or password");
+                request.setAttribute("username", username); // Preserve username for form
                 request.getRequestDispatcher("WEB-INF/view/auth/login.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+            request.setAttribute("error", "Database error: " + e.getMessage());
+            request.setAttribute("username", username); // Preserve username for form
+            request.getRequestDispatcher("WEB-INF/view/auth/login.jsp").forward(request, response);
         }
     }
     
@@ -128,22 +149,31 @@ public class AuthController extends HttpServlet {
      * Processes registration request
      */
     private void register(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
         String username = request.getParameter("username");
+        String email = request.getParameter("email");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
         
-        // Validate input
-        if (username == null || username.trim().isEmpty() || 
-            password == null || password.trim().isEmpty() ||
-            confirmPassword == null || confirmPassword.trim().isEmpty()) {
-            
-            request.setAttribute("errorMessage", "All fields are required");
-            request.getRequestDispatcher("WEB-INF/view/auth/register.jsp").forward(request, response);
-            return;
-        }
+        // Sanitize inputs
+        firstName = ValidationUtils.sanitizeString(firstName);
+        lastName = ValidationUtils.sanitizeString(lastName);
+        username = ValidationUtils.sanitizeString(username);
+        email = ValidationUtils.sanitizeString(email);
+        password = ValidationUtils.sanitizeString(password);
+        confirmPassword = ValidationUtils.sanitizeString(confirmPassword);
         
-        if (!password.equals(confirmPassword)) {
-            request.setAttribute("errorMessage", "Passwords do not match");
+        // Validate input
+        Map<String, String> validationErrors = ValidationUtils.validateRegistration(firstName, lastName, username, email, password, confirmPassword);
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("firstName", firstName);
+            request.setAttribute("lastName", lastName);
+            request.setAttribute("username", username);
+            request.setAttribute("email", email);
             request.getRequestDispatcher("WEB-INF/view/auth/register.jsp").forward(request, response);
             return;
         }
@@ -153,16 +183,24 @@ public class AuthController extends HttpServlet {
             
             if (success) {
                 // Registration successful
-                request.setAttribute("successMessage", "Registration successful. Please login.");
+                request.setAttribute("success", "Registration successful. Please login.");
                 request.getRequestDispatcher("WEB-INF/view/auth/login.jsp").forward(request, response);
             } else {
                 // Registration failed (likely username already exists)
-                request.setAttribute("errorMessage", "Username already exists");
+                request.setAttribute("error", "Username already exists");
+                request.setAttribute("firstName", firstName);
+                request.setAttribute("lastName", lastName);
+                request.setAttribute("username", username);
+                request.setAttribute("email", email);
                 request.getRequestDispatcher("WEB-INF/view/auth/register.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+            request.setAttribute("error", "Database error: " + e.getMessage());
+            request.setAttribute("firstName", firstName);
+            request.setAttribute("lastName", lastName);
+            request.setAttribute("username", username);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("WEB-INF/view/auth/register.jsp").forward(request, response);
         }
     }
     

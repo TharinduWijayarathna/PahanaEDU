@@ -45,8 +45,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-user mr-2 text-orange-600"></i>Username
 				</label> <input type="text" id="username" name="username" required
-					minlength="3" maxlength="50" placeholder="Enter username"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					minlength="3" maxlength="50" placeholder="Enter username" value="${username}"
+					class="w-full px-4 py-3 border ${fieldErrors.username != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.username != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.username}</p>
+				</c:if>
 			</div>
 
 			<!-- Password Field -->
@@ -56,11 +59,14 @@
 					class="fas fa-lock mr-2 text-orange-600"></i>Password
 				</label> <input type="password" id="password" name="password" required
 					minlength="6" placeholder="Enter password"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					class="w-full px-4 py-3 border ${fieldErrors.password != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 				<div class="mt-2 text-xs text-gray-500 flex items-center">
 					<i class="fas fa-info-circle mr-1"></i> Minimum 6 characters,
 					include letters and numbers.
 				</div>
+				<c:if test="${fieldErrors.password != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.password}</p>
+				</c:if>
 			</div>
 
 			<!-- Confirm Password Field -->
@@ -70,7 +76,10 @@
 					class="fas fa-lock mr-2 text-orange-600"></i>Confirm Password
 				</label> <input type="password" id="confirmPassword" name="confirmPassword"
 					required placeholder="Confirm password"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					class="w-full px-4 py-3 border ${fieldErrors.confirmPassword != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.confirmPassword != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.confirmPassword}</p>
+				</c:if>
 			</div>
 
 			<!-- Role Field -->
@@ -79,12 +88,14 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-user-tag mr-2 text-orange-600"></i>Role
 				</label> <select id="role" name="role" required
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					class="w-full px-4 py-3 border ${fieldErrors.role != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 					<option value="">Select Role</option>
-					<option value="user">User</option>
-					<option value="manager">Manager</option>
-					<option value="admin">Admin</option>
+					<option value="user" ${role == 'user' ? 'selected' : ''}>User</option>
+					<option value="admin" ${role == 'admin' ? 'selected' : ''}>Admin</option>
 				</select>
+				<c:if test="${fieldErrors.role != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.role}</p>
+				</c:if>
 			</div>
 
 			<!-- Action Buttons -->

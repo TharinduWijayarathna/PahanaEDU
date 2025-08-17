@@ -57,8 +57,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-user mr-2"></i>Customer Name
 				</label> <input type="text" id="name" name="name" required
-					placeholder="Enter customer name" value="${param.name}"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					placeholder="Enter customer name" value="${name}"
+					class="w-full px-4 py-3 border ${fieldErrors.name != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.name != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.name}</p>
+				</c:if>
 			</div>
 
 			<div>
@@ -68,7 +71,10 @@
 				</label>
 				<textarea id="address" name="address" required
 					placeholder="Enter customer address"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 min-h-[120px] resize-none">${param.address}</textarea>
+					class="w-full px-4 py-3 border ${fieldErrors.address != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200 min-h-[120px] resize-none">${address}</textarea>
+				<c:if test="${fieldErrors.address != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.address}</p>
+				</c:if>
 			</div>
 
 			<div>
@@ -76,8 +82,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-phone mr-2"></i>Telephone
 				</label> <input type="tel" id="telephone" name="telephone" required
-					placeholder="Enter telephone number" value="${param.telephone}"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					placeholder="Enter telephone number" value="${telephone}"
+					class="w-full px-4 py-3 border ${fieldErrors.telephone != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.telephone != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.telephone}</p>
+				</c:if>
 			</div>
 
 			<div class="flex items-center gap-4 pt-4">
