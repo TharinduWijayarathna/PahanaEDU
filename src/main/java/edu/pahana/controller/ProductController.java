@@ -213,13 +213,30 @@ public class ProductController extends HttpServlet {
 
 	private void viewProduct(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int productId = Integer.parseInt(productIdStr);
 			Product product = productService.getProductById(productId);
+			
+			if (product == null) {
+				request.setAttribute("errorMessage", "Product not found");
+				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+				return;
+			}
+			
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/viewProduct.jsp").forward(request, response);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}
@@ -243,6 +260,13 @@ public class ProductController extends HttpServlet {
 				return;
 			}
 			
+			// Format the publication date for the HTML date input
+			if (product.getPublicationDate() != null) {
+				java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
+				String formattedDate = dateFormat.format(product.getPublicationDate());
+				request.setAttribute("formattedPublicationDate", formattedDate);
+			}
+			
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 		} catch (NumberFormatException e) {
@@ -256,7 +280,21 @@ public class ProductController extends HttpServlet {
 
 	private void updateProduct(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
+		int productId;
+		try {
+			productId = Integer.parseInt(productIdStr);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
 		String name = request.getParameter("name");
 		String priceStr = request.getParameter("price");
 		String quantityStr = request.getParameter("quantity");
@@ -342,12 +380,22 @@ public class ProductController extends HttpServlet {
 
 	private void deleteProduct(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int productId = Integer.parseInt(productIdStr);
 			productService.deleteProduct(productId);
 			response.sendRedirect("product?action=list");
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}

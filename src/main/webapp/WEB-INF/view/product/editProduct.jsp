@@ -110,8 +110,8 @@
 					<label for="publicationDate"
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
 						class="fas fa-calendar mr-2"></i>Publication Date
-					</label> <input type="date" id="publicationDate" name="publicationDate"
-						value="${publicationDate != null ? publicationDate : fmt:formatDate(value='${product.publicationDate}', pattern='yyyy-MM-dd')}"
+					</label> 					<input type="date" id="publicationDate" name="publicationDate"
+						value="${publicationDate != null ? publicationDate : formattedPublicationDate}"
 						class="w-full px-4 py-3 border ${fieldErrors.publicationDate != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 					<c:if test="${fieldErrors.publicationDate != null}">
 						<p class="mt-1 text-sm text-red-600">${fieldErrors.publicationDate}</p>
