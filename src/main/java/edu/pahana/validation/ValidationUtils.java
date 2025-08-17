@@ -17,8 +17,7 @@ public class ValidationUtils {
 	private static final Pattern PHONE_PATTERN = Pattern.compile("^[+]?[0-9\\s\\-\\(\\)]{7,15}$");
 	private static final Pattern ACCOUNT_NUMBER_PATTERN = Pattern.compile("^[A-Za-z0-9]{3,20}$");
 	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_]{3,20}$");
-	private static final Pattern ISBN_PATTERN = Pattern
-			.compile("^978-[0-9]{1,5}-[0-9]{1,7}-[0-9X]$|^978[0-9]{10}$|^978-[0-9]{10}$");
+
 
 	/**
 	 * Validates if a string is not null, not empty, and not just whitespace
@@ -83,12 +82,7 @@ public class ValidationUtils {
 		return matchesPattern(username, USERNAME_PATTERN);
 	}
 
-	/**
-	 * Validates if a string is a valid ISBN
-	 */
-	public static boolean isValidISBN(String isbn) {
-		return matchesPattern(isbn, ISBN_PATTERN);
-	}
+
 
 	/**
 	 * Validates if a number is positive
@@ -198,8 +192,7 @@ public class ValidationUtils {
 	/**
 	 * Validates a product object
 	 */
-	public static Map<String, String> validateProduct(String name, String description, String price, String quantity,
-			String isbn, String author, String publisher) {
+	public static Map<String, String> validateProduct(String name, String description, String price, String quantity) {
 		Map<String, String> errors = new HashMap<>();
 
 		if (!isNotEmpty(name)) {
@@ -240,18 +233,6 @@ public class ValidationUtils {
 			} catch (NumberFormatException e) {
 				errors.put("quantity", "Please enter a valid quantity");
 			}
-		}
-
-		if (isNotEmpty(isbn) && !isValidISBN(isbn)) {
-			errors.put("isbn", "Please enter a valid ISBN");
-		}
-
-		if (isNotEmpty(author) && !hasLengthBetween(author, 2, 100)) {
-			errors.put("author", "Author name must be between 2 and 100 characters");
-		}
-
-		if (isNotEmpty(publisher) && !hasLengthBetween(publisher, 2, 100)) {
-			errors.put("publisher", "Publisher name must be between 2 and 100 characters");
 		}
 
 		return errors;

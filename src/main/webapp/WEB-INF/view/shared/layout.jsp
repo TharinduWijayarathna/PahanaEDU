@@ -62,15 +62,17 @@
 						<i class="fas fa-users mr-2"></i>Customers
 					</a> <a href="product?action=list"
 						class="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'product') ? 'text-orange-600 border-b-2 border-orange-600' : ''}">
-						<i class="fas fa-book mr-2"></i>Books
+						<i class="fas fa-book mr-2"></i>Products
 					</a> 					<a href="bill?action=list"
 						class="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'bill') ? 'text-orange-600 border-b-2 border-orange-600' : ''}">
 						<i class="fas fa-file-invoice-dollar mr-2"></i>Bills
 					</a>
-					<a href="activity?action=list"
-						class="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'activity') ? 'text-orange-600 border-b-2 border-orange-600' : ''}">
-						<i class="fas fa-list mr-2"></i>Activity
-					</a>
+					<c:if test="${sessionScope.role == 'admin'}">
+						<a href="activity?action=list"
+							class="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'activity') ? 'text-orange-600 border-b-2 border-orange-600' : ''}">
+							<i class="fas fa-list mr-2"></i>Activity
+						</a>
+					</c:if>
 					<c:if test="${sessionScope.role == 'admin'}">
 						<a href="user-management?action=list"
 							class="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'user-management') ? 'text-orange-600 border-b-2 border-orange-600' : ''}">
@@ -127,15 +129,17 @@
 					<i class="fas fa-users mr-2"></i>Customers
 				</a> <a href="product?action=list"
 					class="text-gray-600 hover:text-orange-600 hover:bg-orange-50 block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'product') ? 'text-orange-600 bg-orange-50' : ''}">
-					<i class="fas fa-book mr-2"></i>Books
+					<i class="fas fa-book mr-2"></i>Products
 				</a> 				<a href="bill?action=list"
 					class="text-gray-600 hover:text-orange-600 hover:bg-orange-50 block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'bill') ? 'text-orange-600 bg-orange-50' : ''}">
 					<i class="fas fa-file-invoice-dollar mr-2"></i>Bills
 				</a>
-				<a href="activity?action=list"
-					class="text-gray-600 hover:text-orange-600 hover:bg-orange-50 block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'activity') ? 'text-orange-600 bg-orange-50' : ''}">
-					<i class="fas fa-list mr-2"></i>Activity
-				</a>
+				<c:if test="${sessionScope.role == 'admin'}">
+					<a href="activity?action=list"
+						class="text-gray-600 hover:text-orange-600 hover:bg-orange-50 block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'activity') ? 'text-orange-600 bg-orange-50' : ''}">
+						<i class="fas fa-list mr-2"></i>Activity
+					</a>
+				</c:if>
 				<c:if test="${sessionScope.role == 'admin'}">
 					<a href="user-management?action=list"
 						class="text-gray-600 hover:text-orange-600 hover:bg-orange-50 block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${fn:contains(pageContext.request.requestURI, 'user-management') ? 'text-orange-600 bg-orange-50' : ''}">

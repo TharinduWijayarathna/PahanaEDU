@@ -32,10 +32,6 @@ CREATE TABLE IF NOT EXISTS Product (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     stock_quantity INT DEFAULT 0,
-    isbn VARCHAR(20),
-    author VARCHAR(100),
-    publisher VARCHAR(100),
-    publication_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -94,12 +90,12 @@ INSERT INTO Customer (account_number, name, address, telephone) VALUES
 ('CUST003', 'David Williams', '789 Oak Rd, Colombo', '0773456789');
 
 -- Insert sample products
-INSERT INTO Product (name, description, price, stock_quantity, isbn, author, publisher, publication_date) VALUES
-('Java Programming', 'Comprehensive guide to Java programming', 45.99, 50, '978-0134685991', 'Joshua Bloch', 'Addison-Wesley', '2017-12-15'),
-('Data Structures and Algorithms', 'Essential computer science concepts', 39.99, 30, '978-0262033848', 'Thomas H. Cormen', 'MIT Press', '2009-07-31'),
-('Web Development Basics', 'HTML, CSS, and JavaScript fundamentals', 29.99, 40, '978-1118008188', 'Jon Duckett', 'Wiley', '2011-11-08'),
-('Database Design', 'Principles of relational database design', 34.99, 25, '978-0321294494', 'C.J. Date', 'Addison-Wesley', '2003-06-15'),
-('Python for Beginners', 'Introduction to Python programming', 24.99, 60, '978-1593276034', 'Eric Matthes', 'No Starch Press', '2015-11-01');
+INSERT INTO Product (name, description, price, stock_quantity) VALUES
+('Java Programming', 'Comprehensive guide to Java programming', 45.99, 50),
+('Data Structures and Algorithms', 'Essential computer science concepts', 39.99, 30),
+('Web Development Basics', 'HTML, CSS, and JavaScript fundamentals', 29.99, 40),
+('Database Design', 'Principles of relational database design', 34.99, 25),
+('Python for Beginners', 'Introduction to Python programming', 24.99, 60);
 
 -- Insert sample activities
 INSERT INTO activities (activity_type, description, entity_type, entity_id, entity_name, username, timestamp) VALUES 

@@ -41,7 +41,7 @@ public class ProductService {
 	}
 
 	/**
-	 * Searches products by name, author, or ISBN
+	 * Searches products by name
 	 * 
 	 * @param searchTerm The search term to look for
 	 * @return List of matching products
@@ -64,7 +64,7 @@ public class ProductService {
 	}
 
 	/**
-	 * Searches products with pagination
+	 * Searches products by name with pagination
 	 * 
 	 * @param searchTerm The search term to look for
 	 * @param offset     The offset for pagination

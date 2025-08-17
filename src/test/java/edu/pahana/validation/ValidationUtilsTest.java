@@ -15,17 +15,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_ValidProduct() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have no validation errors", errors.isEmpty());
@@ -35,16 +31,12 @@ public class ValidationUtilsTest {
 	public void testValidateProduct_MissingName() {
 		// Arrange
 		String name = "";
-		String description = "A test book description";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have name error", errors.containsKey("name"));
@@ -54,17 +46,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_MissingPrice() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have price error", errors.containsKey("price"));
@@ -74,17 +62,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_MissingQuantity() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -94,17 +78,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_InvalidPrice() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "invalid";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have price error", errors.containsKey("price"));
@@ -114,17 +94,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_NegativePrice() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "-10.00";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have price error", errors.containsKey("price"));
@@ -134,17 +110,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_InvalidQuantity() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "invalid";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -154,17 +126,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_NegativeQuantity() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "-5";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -174,17 +142,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_ZeroQuantity() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "0";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have no validation errors for zero quantity", errors.isEmpty());
@@ -193,17 +157,13 @@ public class ValidationUtilsTest {
 	@Test
 	public void testValidateProduct_LargeQuantity() {
 		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
+		String name = "Test Product";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "1000000"; // Over the limit
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -211,100 +171,33 @@ public class ValidationUtilsTest {
 	}
 
 	@Test
-	public void testValidateProduct_InvalidISBN() {
-		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
-		String price = "29.99";
-		String quantity = "50";
-		String isbn = "invalid-isbn";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
-
-		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
-
-		// Assert
-		assertTrue("Should have ISBN error", errors.containsKey("isbn"));
-		assertEquals("Please enter a valid ISBN", errors.get("isbn"));
-	}
-
-	@Test
-	public void testValidateProduct_ValidISBN() {
-		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
-		String price = "29.99";
-		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
-
-		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
-
-		// Assert
-		assertTrue("Should have no validation errors for valid ISBN", errors.isEmpty());
-	}
-
-	@Test
-	public void testValidateProduct_EmptyISBN() {
-		// Arrange
-		String name = "Test Book";
-		String description = "A test book description";
-		String price = "29.99";
-		String quantity = "50";
-		String isbn = ""; // Empty ISBN should be allowed
-		String author = "Test Author";
-		String publisher = "Test Publisher";
-
-		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
-
-		// Assert
-		assertTrue("Should have no validation errors for empty ISBN", errors.isEmpty());
-	}
-
-	@Test
 	public void testValidateProduct_MultipleErrors() {
 		// Arrange
 		String name = ""; // Missing name
-		String description = "A test book description";
+		String description = "A test product description";
 		String price = "invalid"; // Invalid price
 		String quantity = "-5"; // Negative quantity
-		String isbn = "invalid-isbn"; // Invalid ISBN
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
-		assertEquals("Should have 4 validation errors", 4, errors.size());
+		assertEquals("Should have 3 validation errors", 3, errors.size());
 		assertTrue("Should have name error", errors.containsKey("name"));
 		assertTrue("Should have price error", errors.containsKey("price"));
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
-		assertTrue("Should have ISBN error", errors.containsKey("isbn"));
 	}
 
 	@Test
 	public void testValidateProduct_DescriptionTooLong() {
 		// Arrange
-		String name = "Test Book";
+		String name = "Test Product";
 		String description = "A".repeat(501); // 501 characters - over the limit
 		String price = "29.99";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have description error", errors.containsKey("description"));
@@ -315,16 +208,12 @@ public class ValidationUtilsTest {
 	public void testValidateProduct_NameTooShort() {
 		// Arrange
 		String name = "A"; // 1 character - under the minimum
-		String description = "A test book description";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have name error", errors.containsKey("name"));
@@ -335,16 +224,12 @@ public class ValidationUtilsTest {
 	public void testValidateProduct_NameTooLong() {
 		// Arrange
 		String name = "A".repeat(101); // 101 characters - over the limit
-		String description = "A test book description";
+		String description = "A test product description";
 		String price = "29.99";
 		String quantity = "50";
-		String isbn = "978-0134685991";
-		String author = "Test Author";
-		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
-				publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity);
 
 		// Assert
 		assertTrue("Should have name error", errors.containsKey("name"));

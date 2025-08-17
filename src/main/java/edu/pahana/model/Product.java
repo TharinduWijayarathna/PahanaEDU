@@ -12,10 +12,6 @@ public class Product {
 	private String description;
 	private double price;
 	private int quantity; // Stock quantity
-	private String isbn;
-	private String author;
-	private String publisher;
-	private Date publicationDate;
 
 	/**
 	 * Default constructor
@@ -26,17 +22,12 @@ public class Product {
 	/**
 	 * Constructor with all fields
 	 */
-	public Product(int productId, String name, String description, double price, int quantity, String isbn,
-			String author, String publisher, Date publicationDate) {
+	public Product(int productId, String name, String description, double price, int quantity) {
 		this.productId = productId;
 		this.name = name;
 		this.description = description;
 		this.price = price;
 		this.quantity = quantity;
-		this.isbn = isbn;
-		this.author = author;
-		this.publisher = publisher;
-		this.publicationDate = publicationDate;
 	}
 
 	/**
@@ -97,42 +88,9 @@ public class Product {
 		this.quantity = quantity;
 	}
 
-	public String getIsbn() {
-		return isbn;
-	}
-
-	public void setIsbn(String isbn) {
-		this.isbn = isbn;
-	}
-
-	public String getAuthor() {
-		return author;
-	}
-
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-	public String getPublisher() {
-		return publisher;
-	}
-
-	public void setPublisher(String publisher) {
-		this.publisher = publisher;
-	}
-
-	public Date getPublicationDate() {
-		return publicationDate;
-	}
-
-	public void setPublicationDate(Date publicationDate) {
-		this.publicationDate = publicationDate;
-	}
-
 	@Override
 	public String toString() {
 		return "Product{" + "productId=" + productId + ", name='" + name + '\'' + ", description='" + description + '\''
-				+ ", price=" + price + ", quantity=" + quantity + ", isbn='" + isbn + '\'' + ", author='" + author
-				+ '\'' + ", publisher='" + publisher + '\'' + ", publicationDate=" + publicationDate + '}';
+				+ ", price=" + price + ", quantity=" + quantity + '}';
 	}
 }

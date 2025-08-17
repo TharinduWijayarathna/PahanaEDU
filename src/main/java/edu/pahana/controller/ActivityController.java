@@ -41,10 +41,17 @@ public class ActivityController extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// Check if user is logged in
+		// Check if user is logged in and has admin role
 		HttpSession session = request.getSession(false);
 		if (session == null || session.getAttribute("user") == null) {
 			response.sendRedirect("auth?action=login");
+			return;
+		}
+
+		String role = (String) session.getAttribute("role");
+		if (!"admin".equals(role)) {
+			request.setAttribute("error", "Access denied. Admin privileges required.");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 			return;
 		}
 
