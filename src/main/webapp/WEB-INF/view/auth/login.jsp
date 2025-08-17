@@ -36,23 +36,27 @@
 <body class="min-h-screen flex">
 	<!-- Left Side - Login Form -->
 	<div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-		<div id="unsplash-container" class="w-full h-full bg-cover bg-center bg-no-repeat relative">
+		<div id="unsplash-container"
+			class="w-full h-full bg-cover bg-center bg-no-repeat relative">
 			<!-- Overlay for better text readability -->
 			<div class="absolute inset-0 bg-black bg-opacity-40"></div>
-			
+
 			<!-- Content overlay -->
-			<div class="absolute inset-0 flex flex-col items-center justify-center text-white p-8">
+			<div
+				class="absolute inset-0 flex flex-col items-center justify-center text-white p-8">
 				<div class="text-center max-w-lg">
-					<h2 id="inspirational-title" class="text-4xl font-bold mb-4">Empowering Education</h2>
-					<p id="inspirational-text" class="text-xl leading-relaxed">Transform the way you manage educational resources and inspire the next generation of learners.</p>
+					<h2 id="inspirational-title" class="text-4xl font-bold mb-4">Empowering
+						Education</h2>
+					<p id="inspirational-text" class="text-xl leading-relaxed">Transform
+						the way you manage educational resources and inspire the next
+						generation of learners.</p>
 					<div class="mt-8 flex items-center justify-center space-x-4">
 						<div class="flex items-center">
-							<i class="fas fa-graduation-cap text-2xl mr-3"></i>
-							<span class="text-lg">Quality Education</span>
+							<i class="fas fa-graduation-cap text-2xl mr-3"></i> <span
+								class="text-lg">Quality Education</span>
 						</div>
 						<div class="flex items-center">
-							<i class="fas fa-users text-2xl mr-3"></i>
-							<span class="text-lg">Community</span>
+							<i class="fas fa-users text-2xl mr-3"></i> <span class="text-lg">Community</span>
 						</div>
 					</div>
 				</div>
@@ -61,8 +65,9 @@
 	</div>
 
 	<!-- Right Side - Unsplash Image with Text -->
-	
-	<div class="w-full lg:w-1/2 flex items-center justify-center p-4 bg-white">
+
+	<div
+		class="w-full lg:w-1/2 flex items-center justify-center p-4 bg-white">
 		<div class="max-w-md w-full">
 			<!-- Logo and Header -->
 			<div class="text-center mb-8">
@@ -118,11 +123,12 @@
 					<div class="flex items-start">
 						<i class="fas fa-exclamation-triangle text-yellow-500 mr-2 mt-1"></i>
 						<div class="flex-1">
-							<h3 class="text-yellow-800 font-medium mb-2">Please check the
-								following fields:</h3>
+							<h3 class="text-yellow-800 font-medium mb-2">Please check
+								the following fields:</h3>
 							<ul class="list-disc list-inside text-yellow-700 space-y-1">
 								<c:forEach var="fieldError" items="${fieldErrors}">
-									<li><strong>${fieldError.key}:</strong> ${fieldError.value}</li>
+									<li><strong>${fieldError.key}:</strong>
+										${fieldError.value}</li>
 								</c:forEach>
 							</ul>
 						</div>
