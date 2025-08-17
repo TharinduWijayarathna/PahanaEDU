@@ -105,8 +105,8 @@ public class BillService {
         // Apply bill-level discount
         if (billDiscount != null && billDiscount.compareTo(BigDecimal.ZERO) > 0) {
             bill.setDiscount(billDiscount);
-            BigDecimal discountAmount = bill.getTotalAmount().multiply(billDiscount).divide(BigDecimal.valueOf(100));
-            bill.setTotalAmount(bill.getTotalAmount().subtract(discountAmount));
+            BigDecimal discountAmount = bill.getTotalAmount().multiply(billDiscount).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+            bill.setTotalAmount(bill.getTotalAmount().subtract(discountAmount).setScale(2, BigDecimal.ROUND_HALF_UP));
         }
         
         return bill;
