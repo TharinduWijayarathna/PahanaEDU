@@ -7,8 +7,8 @@
 	<!-- Page Header -->
 	<div class="flex items-center justify-between mb-6">
 		<div>
-			<h1 class="text-3xl font-bold text-gray-900">Book Details</h1>
-			<p class="text-gray-600 mt-1">View book information and manage
+			<h1 class="text-3xl font-bold text-gray-900">Product Details</h1>
+			<p class="text-gray-600 mt-1">View product information and manage
 				inventory</p>
 		</div>
 		<a href="product?action=list"
@@ -44,7 +44,7 @@
 			<div class="flex items-center mb-4 md:mb-0">
 				<div
 					class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-					<i class="fas fa-book text-orange-600 text-xl"></i>
+					<i class="fas fa-box text-orange-600 text-xl"></i>
 				</div>
 				<h2 class="text-2xl font-semibold text-gray-900">${product.name}</h2>
 			</div>
@@ -54,7 +54,7 @@
 			</span>
 		</div>
 
-		<!-- Book Information Grid -->
+		<!-- Product Information Grid -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 			<div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
 				<div class="flex items-center mb-2">
@@ -84,62 +84,7 @@
 			</div>
 		</div>
 
-		<!-- Book Details Grid -->
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-			<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-				<div class="flex items-center mb-2">
-					<i class="fas fa-barcode text-blue-600 mr-2"></i>
-					<div class="text-blue-700 text-sm font-medium">ISBN</div>
-				</div>
-				<div class="text-lg font-semibold text-blue-800">
-					<c:choose>
-						<c:when test="${not empty product.isbn}">${product.isbn}</c:when>
-						<c:otherwise><em class="text-gray-500">Not specified</em></c:otherwise>
-					</c:choose>
-				</div>
-			</div>
-			<div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-				<div class="flex items-center mb-2">
-					<i class="fas fa-user text-purple-600 mr-2"></i>
-					<div class="text-purple-700 text-sm font-medium">Author</div>
-				</div>
-				<div class="text-lg font-semibold text-purple-800">
-					<c:choose>
-						<c:when test="${not empty product.author}">${product.author}</c:when>
-						<c:otherwise><em class="text-gray-500">Not specified</em></c:otherwise>
-					</c:choose>
-				</div>
-			</div>
-		</div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-			<div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-				<div class="flex items-center mb-2">
-					<i class="fas fa-building text-indigo-600 mr-2"></i>
-					<div class="text-indigo-700 text-sm font-medium">Publisher</div>
-				</div>
-				<div class="text-lg font-semibold text-indigo-800">
-					<c:choose>
-						<c:when test="${not empty product.publisher}">${product.publisher}</c:when>
-						<c:otherwise><em class="text-gray-500">Not specified</em></c:otherwise>
-					</c:choose>
-				</div>
-			</div>
-			<div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-				<div class="flex items-center mb-2">
-					<i class="fas fa-calendar text-teal-600 mr-2"></i>
-					<div class="text-teal-700 text-sm font-medium">Publication Date</div>
-				</div>
-				<div class="text-lg font-semibold text-teal-800">
-					<c:choose>
-						<c:when test="${not empty product.publicationDate}">
-							<fmt:formatDate value="${product.publicationDate}" pattern="MMMM dd, yyyy"/>
-						</c:when>
-						<c:otherwise><em class="text-gray-500">Not specified</em></c:otherwise>
-					</c:choose>
-				</div>
-			</div>
-		</div>
 
 		<!-- Description Section -->
 		<div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -161,9 +106,9 @@
 		<div class="flex items-center gap-4 mt-8 justify-center">
 			<a href="product?action=edit&id=${product.productId}"
 				class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
-				<i class="fas fa-edit mr-2"></i>Edit Book
+				<i class="fas fa-edit mr-2"></i>Edit Product
 			</a> <a href="product?action=delete&id=${product.productId}"
-				onclick="return confirm('Are you sure you want to delete this book?')"
+				onclick="return confirm('Are you sure you want to delete this product?')"
 				class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center">
 				<i class="fas fa-trash mr-2"></i>Delete
 			</a> <a href="product?action=list"

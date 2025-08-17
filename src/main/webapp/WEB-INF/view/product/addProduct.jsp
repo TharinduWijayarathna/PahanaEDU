@@ -6,8 +6,8 @@
 	<!-- Page Header -->
 	<div class="flex items-center justify-between mb-6">
 		<div>
-			<h1 class="text-3xl font-bold text-gray-900">Add New Book</h1>
-			<p class="text-gray-600 mt-1">Create a new book for your
+			<h1 class="text-3xl font-bold text-gray-900">Add New Product</h1>
+			<p class="text-gray-600 mt-1">Create a new product for your
 				inventory</p>
 		</div>
 		<a href="product?action=list"
@@ -41,9 +41,9 @@
 			<div>
 				<label for="name"
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
-					class="fas fa-book mr-2"></i>Book Title
+					class="fas fa-box mr-2"></i>Product Name
 				</label> <input type="text" id="name" name="name" required
-					placeholder="Enter book title" value="${name}"
+					placeholder="Enter product name" value="${name}"
 					class="w-full px-4 py-3 border ${fieldErrors.name != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 				<c:if test="${fieldErrors.name != null}">
 					<p class="mt-1 text-sm text-red-600">${fieldErrors.name}</p>
@@ -51,18 +51,6 @@
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<label for="isbn"
-						class="block text-sm font-medium text-gray-700 mb-2"> <i
-						class="fas fa-barcode mr-2"></i>ISBN
-					</label> <input type="text" id="isbn" name="isbn"
-						placeholder="e.g., 978-0134685991" value="${isbn}"
-						class="w-full px-4 py-3 border ${fieldErrors.isbn != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-					<c:if test="${fieldErrors.isbn != null}">
-						<p class="mt-1 text-sm text-red-600">${fieldErrors.isbn}</p>
-					</c:if>
-				</div>
-
 				<div>
 					<label for="price"
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
@@ -74,9 +62,7 @@
 						<p class="mt-1 text-sm text-red-600">${fieldErrors.price}</p>
 					</c:if>
 				</div>
-			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<div>
 					<label for="quantity"
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
@@ -88,43 +74,11 @@
 						<p class="mt-1 text-sm text-red-600">${fieldErrors.quantity}</p>
 					</c:if>
 				</div>
-
-				<div>
-					<label for="publicationDate"
-						class="block text-sm font-medium text-gray-700 mb-2"> <i
-						class="fas fa-calendar mr-2"></i>Publication Date
-					</label> <input type="date" id="publicationDate" name="publicationDate"
-						value="${publicationDate}"
-						class="w-full px-4 py-3 border ${fieldErrors.publicationDate != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-					<c:if test="${fieldErrors.publicationDate != null}">
-						<p class="mt-1 text-sm text-red-600">${fieldErrors.publicationDate}</p>
-					</c:if>
-				</div>
 			</div>
 
-			<div>
-				<label for="author"
-					class="block text-sm font-medium text-gray-700 mb-2"> <i
-					class="fas fa-user mr-2"></i>Author
-				</label> <input type="text" id="author" name="author"
-					placeholder="Enter author name" value="${author}"
-					class="w-full px-4 py-3 border ${fieldErrors.author != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-				<c:if test="${fieldErrors.author != null}">
-					<p class="mt-1 text-sm text-red-600">${fieldErrors.author}</p>
-				</c:if>
-			</div>
 
-			<div>
-				<label for="publisher"
-					class="block text-sm font-medium text-gray-700 mb-2"> <i
-					class="fas fa-building mr-2"></i>Publisher
-				</label> <input type="text" id="publisher" name="publisher"
-					placeholder="Enter publisher name" value="${publisher}"
-					class="w-full px-4 py-3 border ${fieldErrors.publisher != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-				<c:if test="${fieldErrors.publisher != null}">
-					<p class="mt-1 text-sm text-red-600">${fieldErrors.publisher}</p>
-				</c:if>
-			</div>
+
+
 
 			<div>
 				<label for="description"
@@ -132,7 +86,7 @@
 					class="fas fa-align-left mr-2"></i>Description
 				</label>
 				<textarea id="description" name="description"
-					placeholder="Enter book description (optional)"
+					placeholder="Enter product description (optional)"
 					class="w-full px-4 py-3 border ${fieldErrors.description != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200 min-h-[120px] resize-none">${description}</textarea>
 				<c:if test="${fieldErrors.description != null}">
 					<p class="mt-1 text-sm text-red-600">${fieldErrors.description}</p>
@@ -142,7 +96,7 @@
 			<div class="flex items-center gap-4 pt-4">
 				<button type="submit"
 					class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center">
-					<i class="fas fa-save mr-2"></i>Add Book
+					<i class="fas fa-save mr-2"></i>Add Product
 				</button>
 				<a href="product?action=list"
 					class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center">

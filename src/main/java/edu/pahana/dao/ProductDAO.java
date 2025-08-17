@@ -13,7 +13,7 @@ import edu.pahana.model.Product;
 
 public class ProductDAO {
 	public void addProduct(Product product) throws SQLException {
-		String query = "INSERT INTO Product (name, price, description, stock_quantity, isbn, author, publisher, publication_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		String query = "INSERT INTO Product (name, price, description, stock_quantity) VALUES (?, ?, ?, ?)";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
@@ -21,14 +21,6 @@ public class ProductDAO {
 		statement.setDouble(2, product.getPrice());
 		statement.setString(3, product.getDescription());
 		statement.setInt(4, product.getQuantity());
-		statement.setString(5, product.getIsbn());
-		statement.setString(6, product.getAuthor());
-		statement.setString(7, product.getPublisher());
-		if (product.getPublicationDate() != null) {
-			statement.setDate(8, new Date(product.getPublicationDate().getTime()));
-		} else {
-			statement.setNull(8, java.sql.Types.DATE);
-		}
 		statement.executeUpdate();
 	}
 
@@ -45,12 +37,8 @@ public class ProductDAO {
 			double price = resultSet.getDouble("price");
 			String desc = resultSet.getString("description");
 			int quantity = resultSet.getInt("stock_quantity");
-			String isbn = resultSet.getString("isbn");
-			String author = resultSet.getString("author");
-			String publisher = resultSet.getString("publisher");
-			Date pubDate = resultSet.getDate("publication_date");
 
-			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			Product product = new Product(id, name, desc, price, quantity);
 			products.add(product);
 		}
 
@@ -81,12 +69,8 @@ public class ProductDAO {
 			double price = resultSet.getDouble("price");
 			String desc = resultSet.getString("description");
 			int quantity = resultSet.getInt("stock_quantity");
-			String isbn = resultSet.getString("isbn");
-			String author = resultSet.getString("author");
-			String publisher = resultSet.getString("publisher");
-			Date pubDate = resultSet.getDate("publication_date");
 
-			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			Product product = new Product(id, name, desc, price, quantity);
 			products.add(product);
 		}
 
@@ -114,7 +98,7 @@ public class ProductDAO {
 	}
 
 	/**
-	 * Searches products by name, author, or ISBN
+	 * Searches products by name
 	 * 
 	 * @param searchTerm The search term to look for
 	 * @return List of matching products
@@ -122,14 +106,12 @@ public class ProductDAO {
 	 */
 	public List<Product> searchProducts(String searchTerm) throws SQLException {
 		List<Product> products = new ArrayList<>();
-		String query = "SELECT * FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ? ORDER BY name";
+		String query = "SELECT * FROM Product WHERE name LIKE ? ORDER BY name";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
 		String searchPattern = "%" + searchTerm + "%";
 		statement.setString(1, searchPattern);
-		statement.setString(2, searchPattern);
-		statement.setString(3, searchPattern);
 		ResultSet resultSet = statement.executeQuery();
 
 		while (resultSet.next()) {
@@ -138,12 +120,8 @@ public class ProductDAO {
 			String desc = resultSet.getString("description");
 			double price = resultSet.getDouble("price");
 			int quantity = resultSet.getInt("stock_quantity");
-			String isbn = resultSet.getString("isbn");
-			String author = resultSet.getString("author");
-			String publisher = resultSet.getString("publisher");
-			Date pubDate = resultSet.getDate("publication_date");
 
-			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			Product product = new Product(id, name, desc, price, quantity);
 			products.add(product);
 		}
 
@@ -151,7 +129,7 @@ public class ProductDAO {
 	}
 
 	/**
-	 * Searches products by name, author, or ISBN with pagination
+	 * Searches products by name with pagination
 	 * 
 	 * @param searchTerm The search term to look for
 	 * @param offset     The offset for pagination
@@ -161,16 +139,14 @@ public class ProductDAO {
 	 */
 	public List<Product> searchProductsPaginated(String searchTerm, int offset, int limit) throws SQLException {
 		List<Product> products = new ArrayList<>();
-		String query = "SELECT * FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ? ORDER BY name LIMIT ? OFFSET ?";
+		String query = "SELECT * FROM Product WHERE name LIKE ? ORDER BY name LIMIT ? OFFSET ?";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
 		String searchPattern = "%" + searchTerm + "%";
 		statement.setString(1, searchPattern);
-		statement.setString(2, searchPattern);
-		statement.setString(3, searchPattern);
-		statement.setInt(4, limit);
-		statement.setInt(5, offset);
+		statement.setInt(2, limit);
+		statement.setInt(3, offset);
 		ResultSet resultSet = statement.executeQuery();
 
 		while (resultSet.next()) {
@@ -179,12 +155,8 @@ public class ProductDAO {
 			String desc = resultSet.getString("description");
 			double price = resultSet.getDouble("price");
 			int quantity = resultSet.getInt("stock_quantity");
-			String isbn = resultSet.getString("isbn");
-			String author = resultSet.getString("author");
-			String publisher = resultSet.getString("publisher");
-			Date pubDate = resultSet.getDate("publication_date");
 
-			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
+			Product product = new Product(id, name, desc, price, quantity);
 			products.add(product);
 		}
 
@@ -199,14 +171,12 @@ public class ProductDAO {
 	 * @throws SQLException if a database error occurs
 	 */
 	public int getProductSearchCount(String searchTerm) throws SQLException {
-		String query = "SELECT COUNT(*) FROM Product WHERE name LIKE ? OR author LIKE ? OR isbn LIKE ?";
+		String query = "SELECT COUNT(*) FROM Product WHERE name LIKE ?";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
 		String searchPattern = "%" + searchTerm + "%";
 		statement.setString(1, searchPattern);
-		statement.setString(2, searchPattern);
-		statement.setString(3, searchPattern);
 		ResultSet resultSet = statement.executeQuery();
 
 		if (resultSet.next()) {
@@ -230,19 +200,15 @@ public class ProductDAO {
 			double price = resultSet.getDouble("price");
 			String description = resultSet.getString("description");
 			int quantity = resultSet.getInt("stock_quantity");
-			String isbn = resultSet.getString("isbn");
-			String author = resultSet.getString("author");
-			String publisher = resultSet.getString("publisher");
-			Date pubDate = resultSet.getDate("publication_date");
 
-			product = new Product(productId, name, description, price, quantity, isbn, author, publisher, pubDate);
+			product = new Product(productId, name, description, price, quantity);
 		}
 
 		return product;
 	}
 
 	public boolean updateProduct(Product product) throws SQLException {
-		String query = "UPDATE Product SET name = ?, price = ?, description = ?, stock_quantity = ?, isbn = ?, author = ?, publisher = ?, publication_date = ? WHERE product_id = ?";
+		String query = "UPDATE Product SET name = ?, price = ?, description = ?, stock_quantity = ? WHERE product_id = ?";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
@@ -250,15 +216,7 @@ public class ProductDAO {
 		statement.setDouble(2, product.getPrice());
 		statement.setString(3, product.getDescription());
 		statement.setInt(4, product.getQuantity());
-		statement.setString(5, product.getIsbn());
-		statement.setString(6, product.getAuthor());
-		statement.setString(7, product.getPublisher());
-		if (product.getPublicationDate() != null) {
-			statement.setDate(8, new Date(product.getPublicationDate().getTime()));
-		} else {
-			statement.setNull(8, java.sql.Types.DATE);
-		}
-		statement.setInt(9, product.getProductId());
+		statement.setInt(5, product.getProductId());
 
 		int rowsUpdated = statement.executeUpdate();
 		return rowsUpdated > 0;

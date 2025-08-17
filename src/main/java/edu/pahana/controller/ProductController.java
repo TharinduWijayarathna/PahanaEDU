@@ -137,22 +137,13 @@ public class ProductController extends HttpServlet {
 		String priceStr = request.getParameter("price");
 		String quantityStr = request.getParameter("quantity");
 		String description = request.getParameter("description");
-		String isbn = request.getParameter("isbn");
-		String author = request.getParameter("author");
-		String publisher = request.getParameter("publisher");
-		String publicationDateStr = request.getParameter("publicationDate");
 
 		// Sanitize inputs
 		name = ValidationUtils.sanitizeString(name);
 		description = ValidationUtils.sanitizeString(description);
-		isbn = ValidationUtils.sanitizeString(isbn);
-		author = ValidationUtils.sanitizeString(author);
-		publisher = ValidationUtils.sanitizeString(publisher);
-		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr,
-				isbn, author, publisher);
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr);
 
 		if (!validationErrors.isEmpty()) {
 			// Validation failed - show errors
@@ -161,10 +152,6 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("price", priceStr);
 			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
-			request.setAttribute("isbn", isbn);
-			request.setAttribute("author", author);
-			request.setAttribute("publisher", publisher);
-			request.setAttribute("publicationDate", publicationDateStr);
 			request.getRequestDispatcher("WEB-INF/view/product/addProduct.jsp").forward(request, response);
 			return;
 		}
@@ -173,36 +160,11 @@ public class ProductController extends HttpServlet {
 		double price = Double.parseDouble(priceStr);
 		int quantity = Integer.parseInt(quantityStr);
 
-		Date publicationDate = null;
-		if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
-			try {
-				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-				publicationDate = dateFormat.parse(publicationDateStr);
-			} catch (ParseException e) {
-				// Handle date parsing error
-				request.setAttribute("error", "Invalid publication date format. Use YYYY-MM-DD.");
-				request.setAttribute("name", name);
-				request.setAttribute("price", priceStr);
-				request.setAttribute("quantity", quantityStr);
-				request.setAttribute("description", description);
-				request.setAttribute("isbn", isbn);
-				request.setAttribute("author", author);
-				request.setAttribute("publisher", publisher);
-				request.setAttribute("publicationDate", publicationDateStr);
-				request.getRequestDispatcher("WEB-INF/view/product/addProduct.jsp").forward(request, response);
-				return;
-			}
-		}
-
 		Product product = new Product();
 		product.setName(name);
 		product.setPrice(price);
 		product.setQuantity(quantity);
 		product.setDescription(description);
-		product.setIsbn(isbn);
-		product.setAuthor(author);
-		product.setPublisher(publisher);
-		product.setPublicationDate(publicationDate);
 
 		try {
 			productService.addProduct(product);
@@ -224,10 +186,6 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("price", priceStr);
 			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
-			request.setAttribute("isbn", isbn);
-			request.setAttribute("author", author);
-			request.setAttribute("publisher", publisher);
-			request.setAttribute("publicationDate", publicationDateStr);
 			request.getRequestDispatcher("WEB-INF/view/product/addProduct.jsp").forward(request, response);
 		}
 	}
@@ -281,13 +239,6 @@ public class ProductController extends HttpServlet {
 				return;
 			}
 
-			// Format the publication date for the HTML date input
-			if (product.getPublicationDate() != null) {
-				java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
-				String formattedDate = dateFormat.format(product.getPublicationDate());
-				request.setAttribute("formattedPublicationDate", formattedDate);
-			}
-
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 		} catch (NumberFormatException e) {
@@ -320,22 +271,13 @@ public class ProductController extends HttpServlet {
 		String priceStr = request.getParameter("price");
 		String quantityStr = request.getParameter("quantity");
 		String description = request.getParameter("description");
-		String isbn = request.getParameter("isbn");
-		String author = request.getParameter("author");
-		String publisher = request.getParameter("publisher");
-		String publicationDateStr = request.getParameter("publicationDate");
 
 		// Sanitize inputs
 		name = ValidationUtils.sanitizeString(name);
 		description = ValidationUtils.sanitizeString(description);
-		isbn = ValidationUtils.sanitizeString(isbn);
-		author = ValidationUtils.sanitizeString(author);
-		publisher = ValidationUtils.sanitizeString(publisher);
-		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr,
-				isbn, author, publisher);
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr);
 
 		if (!validationErrors.isEmpty()) {
 			// Validation failed - show errors
@@ -345,10 +287,6 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("price", priceStr);
 			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
-			request.setAttribute("isbn", isbn);
-			request.setAttribute("author", author);
-			request.setAttribute("publisher", publisher);
-			request.setAttribute("publicationDate", publicationDateStr);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 			return;
 		}
@@ -357,30 +295,7 @@ public class ProductController extends HttpServlet {
 		double price = Double.parseDouble(priceStr);
 		int quantity = Integer.parseInt(quantityStr);
 
-		Date publicationDate = null;
-		if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
-			try {
-				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-				publicationDate = dateFormat.parse(publicationDateStr);
-			} catch (ParseException e) {
-				// Handle date parsing error
-				request.setAttribute("error", "Invalid publication date format. Use YYYY-MM-DD.");
-				request.setAttribute("productId", productId);
-				request.setAttribute("name", name);
-				request.setAttribute("price", priceStr);
-				request.setAttribute("quantity", quantityStr);
-				request.setAttribute("description", description);
-				request.setAttribute("isbn", isbn);
-				request.setAttribute("author", author);
-				request.setAttribute("publisher", publisher);
-				request.setAttribute("publicationDate", publicationDateStr);
-				request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
-				return;
-			}
-		}
-
-		Product product = new Product(productId, name, description, price, quantity, isbn, author, publisher,
-				publicationDate);
+		Product product = new Product(productId, name, description, price, quantity);
 
 		try {
 			productService.updateProduct(product);
@@ -392,10 +307,6 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("price", priceStr);
 			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
-			request.setAttribute("isbn", isbn);
-			request.setAttribute("author", author);
-			request.setAttribute("publisher", publisher);
-			request.setAttribute("publicationDate", publicationDateStr);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 		}
 	}

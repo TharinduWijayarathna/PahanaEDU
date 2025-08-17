@@ -39,18 +39,18 @@ public class ProductServiceTest {
 		// Create test product
 		testProduct = new Product();
 		testProduct.setProductId(1);
-		testProduct.setName("Test Book");
-		testProduct.setDescription("A test book for testing");
+		testProduct.setName("Test Product");
+		testProduct.setDescription("A test product for testing");
 		testProduct.setPrice(29.99);
-		testProduct.setQuantity(50); // Add quantity field
+		testProduct.setQuantity(50);
 
 		// Create existing product for duplicate tests
 		existingProduct = new Product();
 		existingProduct.setProductId(2);
-		existingProduct.setName("Existing Book");
-		existingProduct.setDescription("An existing book");
+		existingProduct.setName("Existing Product");
+		existingProduct.setDescription("An existing product");
 		existingProduct.setPrice(19.99);
-		existingProduct.setQuantity(25); // Add quantity field
+		existingProduct.setQuantity(25);
 	}
 
 	@Test
@@ -65,8 +65,7 @@ public class ProductServiceTest {
 	@Test
 	public void testAddProduct_Success() throws SQLException {
 		// Arrange
-		Product newProduct = new Product(0, "New Book", "A new book", 39.99, 30, "1234567890", "Author", "Publisher",
-				new Date(System.currentTimeMillis()));
+		Product newProduct = new Product(0, "New Product", "A new product", 39.99, 30);
 		doNothing().when(productDAO).addProduct(newProduct);
 
 		// Act
@@ -79,8 +78,7 @@ public class ProductServiceTest {
 	@Test
 	public void testAddProduct_DatabaseError() throws SQLException {
 		// Arrange
-		Product newProduct = new Product(0, "New Book", "A new book", 39.99, 30, "1234567890", "Author", "Publisher",
-				new Date(System.currentTimeMillis()));
+		Product newProduct = new Product(0, "New Product", "A new product", 39.99, 30);
 		doThrow(new SQLException("Database error")).when(productDAO).addProduct(newProduct);
 
 		// Act & Assert
@@ -155,7 +153,7 @@ public class ProductServiceTest {
 		// Assert
 		assertNotNull("Product should be found", result);
 		assertEquals("Product ID should match", productId, result.getProductId());
-		assertEquals("Product name should match", "Test Book", result.getName());
+		assertEquals("Product name should match", "Test Product", result.getName());
 		assertEquals("Product price should match", 29.99, result.getPrice(), 0.01);
 		assertEquals("Product quantity should match", 50, result.getQuantity());
 		verify(productDAO).getProductById(productId);
@@ -194,8 +192,7 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_Success() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(1, "Updated Book", "Updated description", 49.99, 40, "1234567890",
-				"Author", "Publisher", new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(1, "Updated Product", "Updated description", 49.99, 40);
 		when(productDAO.updateProduct(productToUpdate)).thenReturn(true);
 
 		// Act
@@ -209,8 +206,7 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_Failure() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(999, "Nonexistent Book", "Description", 29.99, 15, "1234567890", "Author",
-				"Publisher", new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(999, "Nonexistent Product", "Description", 29.99, 15);
 		when(productDAO.updateProduct(productToUpdate)).thenReturn(false);
 
 		// Act
@@ -224,8 +220,7 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_DatabaseError() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(1, "Test Book", "Description", 29.99, 20, "1234567890", "Author",
-				"Publisher", new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(1, "Test Product", "Description", 29.99, 20);
 		when(productDAO.updateProduct(productToUpdate)).thenThrow(new SQLException("Database error"));
 
 		// Act & Assert

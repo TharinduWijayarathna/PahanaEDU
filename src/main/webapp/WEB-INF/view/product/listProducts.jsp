@@ -8,13 +8,13 @@
 	<!-- Page Header -->
 	<div class="flex items-center justify-between mb-6">
 		<div>
-			<h1 class="text-3xl font-bold text-gray-900">Book Management</h1>
-			<p class="text-gray-600 mt-1">Manage your books and educational
+			<h1 class="text-3xl font-bold text-gray-900">Product Management</h1>
+			<p class="text-gray-600 mt-1">Manage your products and educational
 				materials</p>
 		</div>
 		<a href="product?action=add"
 			class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center">
-			<i class="fas fa-plus mr-2"></i>Add Book
+			<i class="fas fa-plus mr-2"></i>Add Product
 		</a>
 	</div>
 
@@ -45,7 +45,7 @@
 			<input type="hidden" name="action" value="list">
 			<div class="flex-1">
 				<input type="text" name="search" value="${param.search}"
-					placeholder="Search books by title, author, or ISBN..."
+					placeholder="Search products by name..."
 					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
 			</div>
 			<div class="flex items-center space-x-2">
@@ -77,8 +77,8 @@
 				<span class="text-blue-800">
 					Search results for "<strong>${param.search}</strong>" - 
 					<c:choose>
-						<c:when test="${empty products}">No books found</c:when>
-						<c:otherwise>${pagination.totalItems} book(s) found</c:otherwise>
+						<c:when test="${empty products}">No products found</c:when>
+						<c:otherwise>${pagination.totalItems} product(s) found</c:otherwise>
 					</c:choose>
 				</span>
 			</div>
@@ -94,13 +94,10 @@
 					<tr>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Book</th>
+							Product</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Author</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							ISBN</th>
+							Description</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 							Price</th>
@@ -119,7 +116,7 @@
 								<div class="flex items-center">
 									<div
 										class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-										<i class="fas fa-book text-green-600 text-lg"></i>
+										<i class="fas fa-box text-green-600 text-lg"></i>
 									</div>
 									<div>
 										<div class="text-sm font-medium text-gray-900">${product.name}
@@ -132,16 +129,8 @@
 							<td class="px-6 py-4">
 								<div class="text-sm text-gray-900">
 									<c:choose>
-										<c:when test="${not empty product.author}">${product.author}</c:when>
-										<c:otherwise><em class="text-gray-500">Not specified</em></c:otherwise>
-									</c:choose>
-								</div>
-							</td>
-							<td class="px-6 py-4">
-								<div class="text-sm text-gray-900">
-									<c:choose>
-										<c:when test="${not empty product.isbn}">${product.isbn}</c:when>
-										<c:otherwise><em class="text-gray-500">Not specified</em></c:otherwise>
+										<c:when test="${not empty product.description}">${fn:substring(product.description, 0, 50)}${fn:length(product.description) > 50 ? '...' : ''}</c:when>
+										<c:otherwise><em class="text-gray-500">No description</em></c:otherwise>
 									</c:choose>
 								</div>
 							</td>
@@ -175,8 +164,8 @@
 									</a> <a href="product?action=edit&id=${product.productId}"
 										class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
 										<i class="fas fa-edit"></i>
-									</a> <a href="product?action=delete&id=${product.productId}"
-										onclick="return confirm('Are you sure you want to delete this book?')"
+									</a> 									<a href="product?action=delete&id=${product.productId}"
+										onclick="return confirm('Are you sure you want to delete this product?')"
 										class="text-red-600 hover:text-red-900 transition-colors duration-200">
 										<i class="fas fa-trash"></i>
 									</a>
@@ -192,15 +181,15 @@
 			<div class="text-center py-12">
 				<div
 					class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-					<i class="fas fa-book text-gray-400 text-2xl"></i>
+					<i class="fas fa-box text-gray-400 text-2xl"></i>
 				</div>
-				<h3 class="text-lg font-medium text-gray-900 mb-2">No books
+				<h3 class="text-lg font-medium text-gray-900 mb-2">No products
 					found</h3>
 				<p class="text-gray-500 mb-4">Get started by adding your first
-					book.</p>
+					product.</p>
 				<a href="product?action=add"
 					class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors duration-200">
-					Add Book </a>
+					Add Product </a>
 			</div>
 		</c:if>
 	</div>
