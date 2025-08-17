@@ -13,20 +13,21 @@ import edu.pahana.model.Product;
 
 public class ProductDAO {
 	public void addProduct(Product product) throws SQLException {
-		String query = "INSERT INTO Product (name, price, description, isbn, author, publisher, publication_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		String query = "INSERT INTO Product (name, price, description, stock_quantity, isbn, author, publisher, publication_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
 		statement.setString(1, product.getName());
 		statement.setDouble(2, product.getPrice());
 		statement.setString(3, product.getDescription());
-		statement.setString(4, product.getIsbn());
-		statement.setString(5, product.getAuthor());
-		statement.setString(6, product.getPublisher());
+		statement.setInt(4, product.getQuantity());
+		statement.setString(5, product.getIsbn());
+		statement.setString(6, product.getAuthor());
+		statement.setString(7, product.getPublisher());
 		if (product.getPublicationDate() != null) {
-			statement.setDate(7, new Date(product.getPublicationDate().getTime()));
+			statement.setDate(8, new Date(product.getPublicationDate().getTime()));
 		} else {
-			statement.setNull(7, java.sql.Types.DATE);
+			statement.setNull(8, java.sql.Types.DATE);
 		}
 		statement.executeUpdate();
 	}
@@ -43,12 +44,13 @@ public class ProductDAO {
 			String name = resultSet.getString("name");
 			double price = resultSet.getDouble("price");
 			String desc = resultSet.getString("description");
+			int quantity = resultSet.getInt("stock_quantity");
 			String isbn = resultSet.getString("isbn");
 			String author = resultSet.getString("author");
 			String publisher = resultSet.getString("publisher");
 			Date pubDate = resultSet.getDate("publication_date");
 
-			Product product = new Product(id, name, desc, price, isbn, author, publisher, pubDate);
+			Product product = new Product(id, name, desc, price, quantity, isbn, author, publisher, pubDate);
 			products.add(product);
 		}
 
@@ -68,34 +70,36 @@ public class ProductDAO {
 			String name = resultSet.getString("name");
 			double price = resultSet.getDouble("price");
 			String description = resultSet.getString("description");
+			int quantity = resultSet.getInt("stock_quantity");
 			String isbn = resultSet.getString("isbn");
 			String author = resultSet.getString("author");
 			String publisher = resultSet.getString("publisher");
 			Date pubDate = resultSet.getDate("publication_date");
 
-			product = new Product(productId, name, description, price, isbn, author, publisher, pubDate);
+			product = new Product(productId, name, description, price, quantity, isbn, author, publisher, pubDate);
 		}
 
 		return product;
 	}
 
 	public boolean updateProduct(Product product) throws SQLException {
-		String query = "UPDATE Product SET name = ?, price = ?, description = ?, isbn = ?, author = ?, publisher = ?, publication_date = ? WHERE product_id = ?";
+		String query = "UPDATE Product SET name = ?, price = ?, description = ?, stock_quantity = ?, isbn = ?, author = ?, publisher = ?, publication_date = ? WHERE product_id = ?";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement(query);
 		statement.setString(1, product.getName());
 		statement.setDouble(2, product.getPrice());
 		statement.setString(3, product.getDescription());
-		statement.setString(4, product.getIsbn());
-		statement.setString(5, product.getAuthor());
-		statement.setString(6, product.getPublisher());
+		statement.setInt(4, product.getQuantity());
+		statement.setString(5, product.getIsbn());
+		statement.setString(6, product.getAuthor());
+		statement.setString(7, product.getPublisher());
 		if (product.getPublicationDate() != null) {
-			statement.setDate(7, new Date(product.getPublicationDate().getTime()));
+			statement.setDate(8, new Date(product.getPublicationDate().getTime()));
 		} else {
-			statement.setNull(7, java.sql.Types.DATE);
+			statement.setNull(8, java.sql.Types.DATE);
 		}
-		statement.setInt(8, product.getProductId());
+		statement.setInt(9, product.getProductId());
 
 		int rowsUpdated = statement.executeUpdate();
 		return rowsUpdated > 0;
@@ -110,5 +114,35 @@ public class ProductDAO {
 
 		int rowsDeleted = statement.executeUpdate();
 		return rowsDeleted > 0;
+	}
+
+	// Method to update stock quantity when a bill is created
+	public boolean updateStockQuantity(int productId, int quantityToReduce) throws SQLException {
+		String query = "UPDATE Product SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND stock_quantity >= ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		statement.setInt(1, quantityToReduce);
+		statement.setInt(2, productId);
+		statement.setInt(3, quantityToReduce);
+
+		int rowsUpdated = statement.executeUpdate();
+		return rowsUpdated > 0;
+	}
+
+	// Method to check if product has sufficient stock
+	public boolean hasSufficientStock(int productId, int requiredQuantity) throws SQLException {
+		String query = "SELECT stock_quantity FROM Product WHERE product_id = ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		statement.setInt(1, productId);
+		ResultSet resultSet = statement.executeQuery();
+
+		if (resultSet.next()) {
+			int availableStock = resultSet.getInt("stock_quantity");
+			return availableStock >= requiredQuantity;
+		}
+		return false;
 	}
 }

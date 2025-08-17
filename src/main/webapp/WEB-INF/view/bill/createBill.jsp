@@ -112,8 +112,8 @@
 											class="w-full px-3 py-2 border ${fieldErrors.productId != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 											<option value="">Select Product...</option>
 											<c:forEach var="product" items="${products}">
-												<option value="${product.productId}" data-price="${product.price}">
-													${product.name} - Rs. ${product.price}
+												<option value="${product.productId}" data-price="${product.price}" data-stock="${product.quantity}">
+													${product.name} - Rs. ${product.price} (Stock: ${product.quantity})
 												</option>
 											</c:forEach>
 										</select>
@@ -128,6 +128,12 @@
 										<c:if test="${fieldErrors.quantity != null}">
 											<p class="mt-1 text-sm text-red-600">${fieldErrors.quantity}</p>
 										</c:if>
+										<!-- Stock validation error display -->
+										<c:forEach var="error" items="${fieldErrors}">
+											<c:if test="${error.key.startsWith('stock_')}">
+												<p class="mt-1 text-sm text-red-600">${error.value}</p>
+											</c:if>
+										</c:forEach>
 									</td>
 									<td class="px-4 py-4">
 										<input type="text" class="unit-price-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" placeholder="Unit Price" readonly>
@@ -238,17 +244,34 @@
         select.addEventListener('change', function () {
             const option = this.options[this.selectedIndex];
             const price = option.getAttribute('data-price');
+            const stock = option.getAttribute('data-stock');
             if (price) {
                 unitPriceDisplay.value = 'Rs. ' + price;
                 unitPriceHidden.value = price;
+                
+                // Update quantity max attribute based on stock
+                if (stock) {
+                    quantity.setAttribute('max', stock);
+                    if (parseInt(quantity.value) > parseInt(stock)) {
+                        quantity.value = stock;
+                    }
+                }
             } else {
                 unitPriceDisplay.value = '';
                 unitPriceHidden.value = '';
+                quantity.removeAttribute('max');
             }
             calculateSubtotal(row);
         });
 
         quantity.addEventListener('input', function () {
+            const option = select.options[select.selectedIndex];
+            const stock = option.getAttribute('data-stock');
+            
+            if (stock && parseInt(this.value) > parseInt(stock)) {
+                this.value = stock;
+                alert('Quantity cannot exceed available stock (' + stock + ')');
+            }
             calculateSubtotal(row);
         });
     }

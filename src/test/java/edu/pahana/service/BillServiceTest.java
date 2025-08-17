@@ -68,6 +68,7 @@ public class BillServiceTest {
 		testProduct.setName("Test Book");
 		testProduct.setDescription("A test book");
 		testProduct.setPrice(29.99);
+		testProduct.setQuantity(50); // Add quantity field
 
 		// Create test bill item (no discount field anymore)
 		testBillItem = new BillItem();
@@ -99,6 +100,7 @@ public class BillServiceTest {
 	public void testCreateBill_Success() throws SQLException {
 		// Arrange
 		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
+		when(productDAO.getProductById(1)).thenReturn(testProduct);
 		when(billDAO.createBill(testBill)).thenReturn(true);
 		when(billItemDAO.createBillItems(testBill.getItems())).thenReturn(true);
 
@@ -108,6 +110,7 @@ public class BillServiceTest {
 		// Assert
 		assertTrue("Bill creation should succeed", result);
 		verify(customerDAO).getCustomerById(1);
+		verify(productDAO).getProductById(1);
 		verify(billDAO).createBill(testBill);
 		verify(billItemDAO).createBillItems(testBill.getItems());
 	}
@@ -132,6 +135,7 @@ public class BillServiceTest {
 	public void testCreateBill_BillCreationFails() throws SQLException {
 		// Arrange
 		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
+		when(productDAO.getProductById(1)).thenReturn(testProduct);
 		when(billDAO.createBill(testBill)).thenReturn(false);
 
 		// Act
@@ -140,6 +144,7 @@ public class BillServiceTest {
 		// Assert
 		assertFalse("Bill creation should fail", result);
 		verify(customerDAO).getCustomerById(1);
+		verify(productDAO).getProductById(1);
 		verify(billDAO).createBill(testBill);
 		verify(billItemDAO, never()).createBillItems(anyList());
 	}
@@ -148,6 +153,7 @@ public class BillServiceTest {
 	public void testCreateBill_BillItemsCreationFails() throws SQLException {
 		// Arrange
 		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
+		when(productDAO.getProductById(1)).thenReturn(testProduct);
 		when(billDAO.createBill(testBill)).thenReturn(true);
 		when(billItemDAO.createBillItems(testBill.getItems())).thenReturn(false);
 
@@ -157,6 +163,7 @@ public class BillServiceTest {
 		// Assert
 		assertFalse("Bill creation should fail when bill items creation fails", result);
 		verify(customerDAO).getCustomerById(1);
+		verify(productDAO).getProductById(1);
 		verify(billDAO).createBill(testBill);
 		verify(billItemDAO).createBillItems(testBill.getItems());
 	}
@@ -747,5 +754,216 @@ public class BillServiceTest {
 
 		assertEquals("Discount amount should be 100.00", new BigDecimal("100.00"), discountAmount);
 		assertEquals("Final amount should be 0.00", BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP), finalAmount);
+	}
+
+	// New tests for stock validation functionality
+	@Test
+	public void testValidateBillItems_SufficientStock() throws SQLException {
+		// Arrange
+		List<BillItem> items = new ArrayList<>();
+		BillItem item = new BillItem();
+		item.setProductId(1);
+		item.setQuantity(5); // Request 5 units
+		items.add(item);
+
+		Product product = new Product();
+		product.setProductId(1);
+		product.setQuantity(10); // Available 10 units
+		when(productDAO.getProductById(1)).thenReturn(product);
+
+		// Act
+		boolean result = billService.validateBillItems(items);
+
+		// Assert
+		assertTrue("Should be valid with sufficient stock", result);
+		verify(productDAO).getProductById(1);
+	}
+
+	@Test
+	public void testValidateBillItems_InsufficientStock() throws SQLException {
+		// Arrange
+		List<BillItem> items = new ArrayList<>();
+		BillItem item = new BillItem();
+		item.setProductId(1);
+		item.setQuantity(15); // Request 15 units
+		items.add(item);
+
+		Product product = new Product();
+		product.setProductId(1);
+		product.setQuantity(10); // Available only 10 units
+		when(productDAO.getProductById(1)).thenReturn(product);
+
+		// Act
+		boolean result = billService.validateBillItems(items);
+
+		// Assert
+		assertFalse("Should be invalid with insufficient stock", result);
+		verify(productDAO).getProductById(1);
+	}
+
+	@Test
+	public void testValidateBillItems_ExactStockMatch() throws SQLException {
+		// Arrange
+		List<BillItem> items = new ArrayList<>();
+		BillItem item = new BillItem();
+		item.setProductId(1);
+		item.setQuantity(10); // Request exactly 10 units
+		items.add(item);
+
+		Product product = new Product();
+		product.setProductId(1);
+		product.setQuantity(10); // Available exactly 10 units
+		when(productDAO.getProductById(1)).thenReturn(product);
+
+		// Act
+		boolean result = billService.validateBillItems(items);
+
+		// Assert
+		assertTrue("Should be valid with exact stock match", result);
+		verify(productDAO).getProductById(1);
+	}
+
+	@Test
+	public void testValidateBillItems_ZeroStock() throws SQLException {
+		// Arrange
+		List<BillItem> items = new ArrayList<>();
+		BillItem item = new BillItem();
+		item.setProductId(1);
+		item.setQuantity(1); // Request 1 unit
+		items.add(item);
+
+		Product product = new Product();
+		product.setProductId(1);
+		product.setQuantity(0); // No stock available
+		when(productDAO.getProductById(1)).thenReturn(product);
+
+		// Act
+		boolean result = billService.validateBillItems(items);
+
+		// Assert
+		assertFalse("Should be invalid with zero stock", result);
+		verify(productDAO).getProductById(1);
+	}
+
+	@Test
+	public void testValidateBillItems_MultipleItemsWithStock() throws SQLException {
+		// Arrange
+		List<BillItem> items = new ArrayList<>();
+		
+		BillItem item1 = new BillItem();
+		item1.setProductId(1);
+		item1.setQuantity(5);
+		items.add(item1);
+		
+		BillItem item2 = new BillItem();
+		item2.setProductId(2);
+		item2.setQuantity(3);
+		items.add(item2);
+
+		Product product1 = new Product();
+		product1.setProductId(1);
+		product1.setQuantity(10);
+		
+		Product product2 = new Product();
+		product2.setProductId(2);
+		product2.setQuantity(5);
+		
+		when(productDAO.getProductById(1)).thenReturn(product1);
+		when(productDAO.getProductById(2)).thenReturn(product2);
+
+		// Act
+		boolean result = billService.validateBillItems(items);
+
+		// Assert
+		assertTrue("Should be valid with sufficient stock for all items", result);
+		verify(productDAO).getProductById(1);
+		verify(productDAO).getProductById(2);
+	}
+
+	@Test
+	public void testValidateBillItems_MultipleItemsInsufficientStock() throws SQLException {
+		// Arrange
+		List<BillItem> items = new ArrayList<>();
+		
+		BillItem item1 = new BillItem();
+		item1.setProductId(1);
+		item1.setQuantity(5);
+		items.add(item1);
+		
+		BillItem item2 = new BillItem();
+		item2.setProductId(2);
+		item2.setQuantity(10); // More than available
+		items.add(item2);
+
+		Product product1 = new Product();
+		product1.setProductId(1);
+		product1.setQuantity(10);
+		
+		Product product2 = new Product();
+		product2.setProductId(2);
+		product2.setQuantity(5); // Only 5 available
+		
+		when(productDAO.getProductById(1)).thenReturn(product1);
+		when(productDAO.getProductById(2)).thenReturn(product2);
+
+		// Act
+		boolean result = billService.validateBillItems(items);
+
+		// Assert
+		assertFalse("Should be invalid when any item has insufficient stock", result);
+		verify(productDAO).getProductById(1);
+		verify(productDAO).getProductById(2);
+	}
+
+	@Test
+	public void testCreateBillWithStockValidation_Success() throws SQLException {
+		// Arrange
+		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
+		when(productDAO.getProductById(1)).thenReturn(testProduct);
+		when(billDAO.createBill(testBill)).thenReturn(true);
+		when(billItemDAO.createBillItems(testBill.getItems())).thenReturn(true);
+		when(productDAO.updateStockQuantity(1, 2)).thenReturn(true);
+
+		// Act
+		boolean result = billService.createBill(testBill);
+
+		// Assert
+		assertTrue("Bill creation should succeed with stock validation", result);
+		verify(customerDAO).getCustomerById(1);
+		verify(productDAO).getProductById(1);
+		verify(billDAO).createBill(testBill);
+		verify(billItemDAO).createBillItems(testBill.getItems());
+		verify(productDAO).updateStockQuantity(1, 2);
+	}
+
+	@Test
+	public void testCreateBillWithStockValidation_InsufficientStock() throws SQLException {
+		// Arrange
+		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
+		
+		Product lowStockProduct = new Product();
+		lowStockProduct.setProductId(1);
+		lowStockProduct.setQuantity(1); // Only 1 available
+		when(productDAO.getProductById(1)).thenReturn(lowStockProduct);
+
+		// Create bill item requesting more than available
+		BillItem highQuantityItem = new BillItem();
+		highQuantityItem.setProductId(1);
+		highQuantityItem.setQuantity(5); // Request 5, but only 1 available
+		
+		List<BillItem> items = new ArrayList<>();
+		items.add(highQuantityItem);
+		testBill.setItems(items);
+
+		// Act
+		boolean result = billService.createBill(testBill);
+
+		// Assert
+		assertFalse("Bill creation should fail with insufficient stock", result);
+		verify(customerDAO).getCustomerById(1);
+		verify(productDAO).getProductById(1);
+		verify(billDAO, never()).createBill(any(Bill.class));
+		verify(billItemDAO, never()).createBillItems(anyList());
+		verify(productDAO, never()).updateStockQuantity(anyInt(), anyInt());
 	}
 }

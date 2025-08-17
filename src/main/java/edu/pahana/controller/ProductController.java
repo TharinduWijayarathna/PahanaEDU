@@ -107,6 +107,7 @@ public class ProductController extends HttpServlet {
 			throws ServletException, IOException {
 		String name = request.getParameter("name");
 		String priceStr = request.getParameter("price");
+		String quantityStr = request.getParameter("quantity");
 		String description = request.getParameter("description");
 		String isbn = request.getParameter("isbn");
 		String author = request.getParameter("author");
@@ -122,7 +123,7 @@ public class ProductController extends HttpServlet {
 		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, isbn,
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr, isbn,
 				author, publisher);
 
 		if (!validationErrors.isEmpty()) {
@@ -130,6 +131,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("fieldErrors", validationErrors);
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -139,8 +141,9 @@ public class ProductController extends HttpServlet {
 			return;
 		}
 
-		// Parse price
+		// Parse price and quantity
 		double price = Double.parseDouble(priceStr);
+		int quantity = Integer.parseInt(quantityStr);
 
 		Date publicationDate = null;
 		if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
@@ -152,6 +155,7 @@ public class ProductController extends HttpServlet {
 				request.setAttribute("error", "Invalid publication date format. Use YYYY-MM-DD.");
 				request.setAttribute("name", name);
 				request.setAttribute("price", priceStr);
+				request.setAttribute("quantity", quantityStr);
 				request.setAttribute("description", description);
 				request.setAttribute("isbn", isbn);
 				request.setAttribute("author", author);
@@ -165,6 +169,7 @@ public class ProductController extends HttpServlet {
 		Product product = new Product();
 		product.setName(name);
 		product.setPrice(price);
+		product.setQuantity(quantity);
 		product.setDescription(description);
 		product.setIsbn(isbn);
 		product.setAuthor(author);
@@ -189,6 +194,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("error", "Database error: " + e.getMessage());
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -229,6 +235,7 @@ public class ProductController extends HttpServlet {
 		int productId = Integer.parseInt(request.getParameter("id"));
 		String name = request.getParameter("name");
 		String priceStr = request.getParameter("price");
+		String quantityStr = request.getParameter("quantity");
 		String description = request.getParameter("description");
 		String isbn = request.getParameter("isbn");
 		String author = request.getParameter("author");
@@ -244,7 +251,7 @@ public class ProductController extends HttpServlet {
 		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, isbn,
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr, isbn,
 				author, publisher);
 
 		if (!validationErrors.isEmpty()) {
@@ -253,6 +260,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("productId", productId);
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -262,8 +270,9 @@ public class ProductController extends HttpServlet {
 			return;
 		}
 
-		// Parse price
+		// Parse price and quantity
 		double price = Double.parseDouble(priceStr);
+		int quantity = Integer.parseInt(quantityStr);
 
 		Date publicationDate = null;
 		if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
@@ -276,6 +285,7 @@ public class ProductController extends HttpServlet {
 				request.setAttribute("productId", productId);
 				request.setAttribute("name", name);
 				request.setAttribute("price", priceStr);
+				request.setAttribute("quantity", quantityStr);
 				request.setAttribute("description", description);
 				request.setAttribute("isbn", isbn);
 				request.setAttribute("author", author);
@@ -286,7 +296,7 @@ public class ProductController extends HttpServlet {
 			}
 		}
 
-		Product product = new Product(productId, name, description, price, isbn, author, publisher, publicationDate);
+		Product product = new Product(productId, name, description, price, quantity, isbn, author, publisher, publicationDate);
 
 		try {
 			productService.updateProduct(product);
@@ -296,6 +306,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("productId", productId);
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);

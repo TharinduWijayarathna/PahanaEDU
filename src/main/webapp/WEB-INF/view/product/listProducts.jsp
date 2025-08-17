@@ -75,6 +75,9 @@
 							Price</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							Stock</th>
+						<th
+							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 							Actions</th>
 					</tr>
 				</thead>
@@ -115,6 +118,22 @@
 								<div class="text-sm font-medium text-gray-900">
 									<fmt:formatNumber value="${product.price}" type="currency"
 										currencySymbol="Rs. " />
+								</div>
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="text-sm">
+									<c:choose>
+										<c:when test="${product.quantity > 0}">
+											<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+												${product.quantity} in stock
+											</span>
+										</c:when>
+										<c:otherwise>
+											<span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+												Out of stock
+											</span>
+										</c:otherwise>
+									</c:choose>
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

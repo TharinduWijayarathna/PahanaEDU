@@ -198,12 +198,13 @@ public class BillController extends HttpServlet {
 			List<BillItem> items = new ArrayList<>();
 			Map<String, String> validationErrors = new java.util.HashMap<>();
 
+			// First pass: validate all items and check stock
 			for (int i = 0; i < productIds.length; i++) {
 				if (productIds[i] != null && !productIds[i].trim().isEmpty() && quantities[i] != null
 						&& !quantities[i].trim().isEmpty() && unitPrices[i] != null
 						&& !unitPrices[i].trim().isEmpty()) {
 
-					// Validate bill item (no discount validation needed for items)
+					// Validate bill item
 					Map<String, String> itemErrors = ValidationUtils.validateBillItem(productIds[i], quantities[i],
 							unitPrices[i]);
 
@@ -217,10 +218,17 @@ public class BillController extends HttpServlet {
 
 							Product product = productService.getProductById(productId);
 							if (product != null) {
-								BillItem item = new BillItem(productId, product.getName(), quantity,
-										BigDecimal.valueOf(unitPrice));
-								item.calculateSubtotal();
-								items.add(item);
+								// Check stock availability
+								if (product.getQuantity() < quantity) {
+									validationErrors.put("stock_" + i, 
+										"Insufficient stock for " + product.getName() + 
+										". Available: " + product.getQuantity() + ", Requested: " + quantity);
+								} else {
+									BillItem item = new BillItem(productId, product.getName(), quantity,
+											BigDecimal.valueOf(unitPrice));
+									item.calculateSubtotal();
+									items.add(item);
+								}
 							} else {
 								validationErrors.put("productId", "Invalid product selected");
 							}
@@ -266,6 +274,16 @@ public class BillController extends HttpServlet {
 			Bill bill = billService.createBillFromItems(customerId, items, BigDecimal.valueOf(billDiscount));
 
 			if (bill != null && billService.createBill(bill)) {
+				// Update stock quantities
+				try {
+					for (BillItem item : items) {
+						productService.updateStockQuantity(item.getProductId(), item.getQuantity());
+					}
+				} catch (Exception e) {
+					// Log error but don't fail bill creation
+					System.err.println("Failed to update stock quantities: " + e.getMessage());
+				}
+
 				// Log bill creation activity
 				try {
 					HttpSession session = request.getSession(false);

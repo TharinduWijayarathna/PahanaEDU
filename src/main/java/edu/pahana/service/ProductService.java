@@ -45,4 +45,14 @@ public class ProductService {
 	public boolean deleteProduct(int productId) throws SQLException {
 		return productDAO.deleteProduct(productId);
 	}
+
+	// Method to update stock quantity when a bill is created
+	public boolean updateStockQuantity(int productId, int quantityToReduce) throws SQLException {
+		return productDAO.updateStockQuantity(productId, quantityToReduce);
+	}
+
+	// Method to check if product has sufficient stock
+	public boolean hasSufficientStock(int productId, int requiredQuantity) throws SQLException {
+		return productDAO.hasSufficientStock(productId, requiredQuantity);
+	}
 }
