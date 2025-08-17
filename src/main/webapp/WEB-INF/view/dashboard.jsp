@@ -121,7 +121,7 @@
 					<div class="flex items-center justify-between">
 						<div>
 							<p class="text-sm text-gray-600">Current Month</p>
-							<p class="text-2xl font-bold text-green-600">$${revenueData.currentMonthRevenue}</p>
+							<p class="text-2xl font-bold text-green-600">Rs. ${revenueData.currentMonthRevenue}</p>
 						</div>
 						<i class="fas fa-chart-line text-green-500 text-xl"></i>
 					</div>
@@ -130,7 +130,7 @@
 					<div class="flex items-center justify-between">
 						<div>
 							<p class="text-sm text-gray-600">Last Month</p>
-							<p class="text-2xl font-bold text-blue-600">$${revenueData.lastMonthRevenue}</p>
+							<p class="text-2xl font-bold text-blue-600">Rs. ${revenueData.lastMonthRevenue}</p>
 						</div>
 						<i class="fas fa-chart-bar text-blue-500 text-xl"></i>
 					</div>
@@ -168,7 +168,7 @@
 				<div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
 					<div>
 						<p class="text-sm text-gray-600">This Month Revenue</p>
-						<p class="text-lg font-bold text-green-600">$${quickStats.thisMonthRevenue}</p>
+						<p class="text-lg font-bold text-green-600">Rs. ${quickStats.thisMonthRevenue}</p>
 					</div>
 					<i class="fas fa-dollar-sign text-green-500"></i>
 				</div>
@@ -189,7 +189,7 @@
 				<div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
 					<div>
 						<p class="text-sm text-gray-600">Avg. Bill Value</p>
-						<p class="text-lg font-bold text-orange-600">$${quickStats.avgBillValue}</p>
+						<p class="text-lg font-bold text-orange-600">Rs. ${quickStats.avgBillValue}</p>
 					</div>
 					<i class="fas fa-calculator text-orange-500"></i>
 				</div>
@@ -252,7 +252,7 @@
 							<tr>
 								<td class="py-2 text-sm text-gray-900">${bill.billId}</td>
 								<td class="py-2 text-sm text-gray-600">${bill.customerName}</td>
-								<td class="py-2 text-sm font-medium text-green-600">$${bill.amount}</td>
+								<td class="py-2 text-sm font-medium text-green-600">Rs. ${bill.amount}</td>
 								<td class="py-2">
 									<c:choose>
 										<c:when test="${bill.status == 'paid'}">
@@ -305,10 +305,10 @@
 							</c:choose>
 							<div>
 								<p class="text-sm font-medium text-gray-900">${customer.name}</p>
-								<p class="text-xs text-gray-500">${customer.billCount} bills • $${customer.totalRevenue} total</p>
+								<p class="text-xs text-gray-500">${customer.billCount} bills • Rs. ${customer.totalRevenue} total</p>
 							</div>
 						</div>
-						<span class="text-sm font-medium text-green-600">$${customer.totalRevenue}</span>
+						<span class="text-sm font-medium text-green-600">Rs. ${customer.totalRevenue}</span>
 					</div>
 				</c:forEach>
 			</div>
