@@ -3,6 +3,7 @@ package edu.pahana.controller;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.User;
 import edu.pahana.service.UserService;
+import edu.pahana.validation.ValidationUtils;
 
 /**
  * Controller for handling user management operations.
@@ -191,24 +193,32 @@ public class UserManagementController extends HttpServlet {
         String confirmPassword = request.getParameter("confirmPassword");
         String role = request.getParameter("role");
         
-        // Validate input
-        if (username == null || username.trim().isEmpty() || 
-            password == null || password.trim().isEmpty() ||
-            confirmPassword == null || confirmPassword.trim().isEmpty()) {
-            
-            request.setAttribute("error", "All fields are required");
-            request.getRequestDispatcher("WEB-INF/view/user-management/addUser.jsp").forward(request, response);
-            return;
-        }
+        // Sanitize inputs
+        username = ValidationUtils.sanitizeString(username);
+        password = ValidationUtils.sanitizeString(password);
+        confirmPassword = ValidationUtils.sanitizeString(confirmPassword);
+        role = ValidationUtils.sanitizeString(role);
         
-        if (!password.equals(confirmPassword)) {
-            request.setAttribute("error", "Passwords do not match");
-            request.getRequestDispatcher("WEB-INF/view/user-management/addUser.jsp").forward(request, response);
-            return;
-        }
-        
+        // Set default role if empty
         if (role == null || role.trim().isEmpty()) {
-            role = "user"; // Default role
+            role = "user";
+        }
+        
+        // Validate input
+        Map<String, String> validationErrors = ValidationUtils.validateUser(username, password, role);
+        
+        // Add custom validation for confirm password
+        if (!password.equals(confirmPassword)) {
+            validationErrors.put("confirmPassword", "Passwords do not match");
+        }
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("username", username);
+            request.setAttribute("role", role);
+            request.getRequestDispatcher("WEB-INF/view/user-management/addUser.jsp").forward(request, response);
+            return;
         }
         
         try {
@@ -219,10 +229,14 @@ public class UserManagementController extends HttpServlet {
                 response.sendRedirect("user-management?action=list");
             } else {
                 request.setAttribute("error", "Username already exists");
+                request.setAttribute("username", username);
+                request.setAttribute("role", role);
                 request.getRequestDispatcher("WEB-INF/view/user-management/addUser.jsp").forward(request, response);
             }
         } catch (SQLException e) {
             request.setAttribute("error", "Error adding user: " + e.getMessage());
+            request.setAttribute("username", username);
+            request.setAttribute("role", role);
             request.getRequestDispatcher("WEB-INF/view/user-management/addUser.jsp").forward(request, response);
         }
     }
@@ -237,25 +251,45 @@ public class UserManagementController extends HttpServlet {
         String confirmPassword = request.getParameter("confirmPassword");
         String role = request.getParameter("role");
         
+        // Sanitize inputs
+        username = ValidationUtils.sanitizeString(username);
+        password = ValidationUtils.sanitizeString(password);
+        confirmPassword = ValidationUtils.sanitizeString(confirmPassword);
+        role = ValidationUtils.sanitizeString(role);
+        
         // Validate input
-        if (userIdStr == null || userIdStr.trim().isEmpty() ||
-            username == null || username.trim().isEmpty()) {
-            
-            request.setAttribute("error", "User ID and username are required");
+        if (userIdStr == null || userIdStr.trim().isEmpty()) {
+            request.setAttribute("error", "User ID is required");
             listUsers(request, response);
             return;
         }
         
-        if (password != null && !password.trim().isEmpty()) {
-            if (confirmPassword == null || !password.equals(confirmPassword)) {
-                request.setAttribute("error", "Passwords do not match");
-                showEditUserForm(request, response);
-                return;
+        // Set default role if empty
+        if (role == null || role.trim().isEmpty()) {
+            role = "user";
+        }
+        
+        // Validate username and role
+        Map<String, String> validationErrors = ValidationUtils.validateUser(username, password != null && !password.trim().isEmpty() ? password : "dummy", role);
+        
+        // Remove password validation if password is not being updated
+        if (password == null || password.trim().isEmpty()) {
+            validationErrors.remove("password");
+        } else {
+            // Add custom validation for confirm password
+            if (!password.equals(confirmPassword)) {
+                validationErrors.put("confirmPassword", "Passwords do not match");
             }
         }
         
-        if (role == null || role.trim().isEmpty()) {
-            role = "user"; // Default role
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("userId", userIdStr);
+            request.setAttribute("username", username);
+            request.setAttribute("role", role);
+            request.getRequestDispatcher("WEB-INF/view/user-management/editUser.jsp").forward(request, response);
+            return;
         }
         
         try {
@@ -282,7 +316,9 @@ public class UserManagementController extends HttpServlet {
                 response.sendRedirect("user-management?action=list");
             } else {
                 request.setAttribute("error", "Failed to update user");
-                request.setAttribute("user", user);
+                request.setAttribute("userId", userIdStr);
+                request.setAttribute("username", username);
+                request.setAttribute("role", role);
                 request.getRequestDispatcher("WEB-INF/view/user-management/editUser.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
@@ -290,7 +326,10 @@ public class UserManagementController extends HttpServlet {
             listUsers(request, response);
         } catch (SQLException e) {
             request.setAttribute("error", "Error updating user: " + e.getMessage());
-            listUsers(request, response);
+            request.setAttribute("userId", userIdStr);
+            request.setAttribute("username", username);
+            request.setAttribute("role", role);
+            request.getRequestDispatcher("WEB-INF/view/user-management/editUser.jsp").forward(request, response);
         }
     }
     

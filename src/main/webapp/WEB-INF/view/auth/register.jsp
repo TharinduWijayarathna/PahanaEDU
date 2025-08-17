@@ -61,6 +61,40 @@
 				</div>
 			</div>
 		</c:if>
+		
+		<!-- Validation Error Messages -->
+		<c:if test="${not empty validationErrors}">
+			<div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+				<div class="flex items-start">
+					<i class="fas fa-exclamation-triangle text-red-500 mr-2 mt-1"></i>
+					<div class="flex-1">
+						<h3 class="text-red-800 font-medium mb-2">Please correct the following errors:</h3>
+						<ul class="list-disc list-inside text-red-700 space-y-1">
+							<c:forEach var="error" items="${validationErrors}">
+								<li>${error}</li>
+							</c:forEach>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</c:if>
+		
+		<!-- Field-specific validation errors -->
+		<c:if test="${not empty fieldErrors}">
+			<div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+				<div class="flex items-start">
+					<i class="fas fa-exclamation-triangle text-yellow-500 mr-2 mt-1"></i>
+					<div class="flex-1">
+						<h3 class="text-yellow-800 font-medium mb-2">Please check the following fields:</h3>
+						<ul class="list-disc list-inside text-yellow-700 space-y-1">
+							<c:forEach var="fieldError" items="${fieldErrors}">
+								<li><strong>${fieldError.key}:</strong> ${fieldError.value}</li>
+							</c:forEach>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</c:if>
 
 		<form action="auth" method="post" class="space-y-6">
 			<input type="hidden" name="action" value="register">
@@ -71,16 +105,22 @@
 						class="block text-sm font-medium text-gray-700 mb-2"><i
 						class="fas fa-id-card mr-2"></i>First Name</label> <input type="text"
 						id="firstName" name="firstName" required
-						placeholder="Enter first name" value="${param.firstName}"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						placeholder="Enter first name" value="${firstName}"
+						class="w-full px-4 py-3 border ${fieldErrors.firstName != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} rounded-lg">
+					<c:if test="${fieldErrors.firstName != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.firstName}</p>
+					</c:if>
 				</div>
 				<div>
 					<label for="lastName"
 						class="block text-sm font-medium text-gray-700 mb-2"><i
 						class="fas fa-id-card mr-2"></i>Last Name</label> <input type="text"
 						id="lastName" name="lastName" required
-						placeholder="Enter last name" value="${param.lastName}"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						placeholder="Enter last name" value="${lastName}"
+						class="w-full px-4 py-3 border ${fieldErrors.lastName != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} rounded-lg">
+					<c:if test="${fieldErrors.lastName != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.lastName}</p>
+					</c:if>
 				</div>
 			</div>
 
@@ -89,8 +129,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"><i
 					class="fas fa-user mr-2"></i>Username</label> <input type="text"
 					id="username" name="username" required
-					placeholder="Choose a username" value="${param.username}"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+					placeholder="Choose a username" value="${username}"
+					class="w-full px-4 py-3 border ${fieldErrors.username != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} rounded-lg">
+				<c:if test="${fieldErrors.username != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.username}</p>
+				</c:if>
 			</div>
 
 			<div>
@@ -98,8 +141,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"><i
 					class="fas fa-envelope mr-2"></i>Email</label> <input type="email"
 					id="email" name="email" required placeholder="Enter your email"
-					value="${param.email}"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+					value="${email}"
+					class="w-full px-4 py-3 border ${fieldErrors.email != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} rounded-lg">
+				<c:if test="${fieldErrors.email != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.email}</p>
+				</c:if>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +155,10 @@
 						class="fas fa-lock mr-2"></i>Password</label> <input type="password"
 						id="password" name="password" required
 						placeholder="Choose a password"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						class="w-full px-4 py-3 border ${fieldErrors.password != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} rounded-lg">
+					<c:if test="${fieldErrors.password != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.password}</p>
+					</c:if>
 				</div>
 				<div>
 					<label for="confirmPassword"
@@ -117,7 +166,10 @@
 						class="fas fa-lock mr-2"></i>Confirm Password</label> <input
 						type="password" id="confirmPassword" name="confirmPassword"
 						required placeholder="Confirm your password"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						class="w-full px-4 py-3 border ${fieldErrors.confirmPassword != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} rounded-lg">
+					<c:if test="${fieldErrors.confirmPassword != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.confirmPassword}</p>
+					</c:if>
 				</div>
 			</div>
 

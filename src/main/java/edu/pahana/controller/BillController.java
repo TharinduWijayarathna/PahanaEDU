@@ -7,6 +7,7 @@ import edu.pahana.model.Product;
 import edu.pahana.service.BillService;
 import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
+import edu.pahana.validation.ValidationUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/bill")
 public class BillController extends HttpServlet {
@@ -149,12 +151,28 @@ public class BillController extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // Get customer ID
-            int customerId = Integer.parseInt(request.getParameter("customerId"));
+            // Get and sanitize customer ID
+            String customerIdStr = ValidationUtils.sanitizeString(request.getParameter("customerId"));
             
             // Get items from request
             String[] productIds = request.getParameterValues("productId");
             String[] quantities = request.getParameterValues("quantity");
+            
+            // Validate customer ID
+            if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
+                request.setAttribute("error", "Please select a customer");
+                showCreateBillForm(request, response);
+                return;
+            }
+            
+            int customerId;
+            try {
+                customerId = Integer.parseInt(customerIdStr);
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Invalid customer selected");
+                showCreateBillForm(request, response);
+                return;
+            }
             
             if (productIds == null || quantities == null || productIds.length == 0) {
                 request.setAttribute("error", "Please add at least one item to the bill");
@@ -163,22 +181,40 @@ public class BillController extends HttpServlet {
             }
             
             List<BillItem> items = new ArrayList<>();
+            Map<String, String> validationErrors = new java.util.HashMap<>();
             
             for (int i = 0; i < productIds.length; i++) {
                 if (productIds[i] != null && !productIds[i].trim().isEmpty() &&
                     quantities[i] != null && !quantities[i].trim().isEmpty()) {
                     
-                    int productId = Integer.parseInt(productIds[i]);
-                    int quantity = Integer.parseInt(quantities[i]);
+                    // Validate bill item
+                    Map<String, String> itemErrors = ValidationUtils.validateBillItem(productIds[i], quantities[i], "0");
                     
-                    if (quantity > 0) {
-                        Product product = productService.getProductById(productId);
-                        if (product != null) {
-                            BillItem item = new BillItem(productId, product.getName(), quantity, BigDecimal.valueOf(product.getPrice()));
-                            items.add(item);
+                    if (!itemErrors.isEmpty()) {
+                        validationErrors.putAll(itemErrors);
+                    } else {
+                        try {
+                            int productId = Integer.parseInt(productIds[i]);
+                            int quantity = Integer.parseInt(quantities[i]);
+                            
+                            Product product = productService.getProductById(productId);
+                            if (product != null) {
+                                BillItem item = new BillItem(productId, product.getName(), quantity, BigDecimal.valueOf(product.getPrice()));
+                                items.add(item);
+                            } else {
+                                validationErrors.put("productId", "Invalid product selected");
+                            }
+                        } catch (NumberFormatException e) {
+                            validationErrors.put("quantity", "Invalid quantity value");
                         }
                     }
                 }
+            }
+            
+            if (!validationErrors.isEmpty()) {
+                request.setAttribute("fieldErrors", validationErrors);
+                showCreateBillForm(request, response);
+                return;
             }
             
             if (items.isEmpty()) {
@@ -198,9 +234,6 @@ public class BillController extends HttpServlet {
                 showCreateBillForm(request, response);
             }
             
-        } catch (NumberFormatException e) {
-            request.setAttribute("error", "Invalid input data");
-            showCreateBillForm(request, response);
         } catch (Exception e) {
             request.setAttribute("error", "An error occurred: " + e.getMessage());
             showCreateBillForm(request, response);
@@ -213,27 +246,50 @@ public class BillController extends HttpServlet {
         String billIdStr = request.getParameter("billId");
         String status = request.getParameter("status");
         
-        if (billIdStr != null && status != null) {
-            try {
-                int billId = Integer.parseInt(billIdStr);
-                boolean updated = billService.updateBillStatus(billId, status);
-                
-                if (updated) {
-                    request.setAttribute("success", "Bill status updated successfully");
-                } else {
-                    request.setAttribute("error", "Failed to update bill status");
+        // Sanitize inputs
+        billIdStr = ValidationUtils.sanitizeString(billIdStr);
+        status = ValidationUtils.sanitizeString(status);
+        
+        // Validate input
+        Map<String, String> validationErrors = ValidationUtils.validateBillStatusUpdate(billIdStr, status);
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("billId", billIdStr);
+            request.setAttribute("status", status);
+            
+            // Redirect back to the bill view page with errors
+            if (billIdStr != null) {
+                try {
+                    int billId = Integer.parseInt(billIdStr);
+                    response.sendRedirect("bill?action=view&id=" + billId);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect("bill?action=list");
                 }
-                
-                response.sendRedirect("bill?action=view&id=" + billId);
-                
-            } catch (NumberFormatException e) {
-                request.setAttribute("error", "Invalid bill ID");
-                response.sendRedirect("bill?action=list");
-            } catch (Exception e) {
-                request.setAttribute("error", "Error updating bill: " + e.getMessage());
+            } else {
                 response.sendRedirect("bill?action=list");
             }
-        } else {
+            return;
+        }
+        
+        try {
+            int billId = Integer.parseInt(billIdStr);
+            boolean updated = billService.updateBillStatus(billId, status);
+            
+            if (updated) {
+                request.setAttribute("success", "Bill status updated successfully");
+            } else {
+                request.setAttribute("error", "Failed to update bill status");
+            }
+            
+            response.sendRedirect("bill?action=view&id=" + billId);
+            
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid bill ID");
+            response.sendRedirect("bill?action=list");
+        } catch (Exception e) {
+            request.setAttribute("error", "Error updating bill: " + e.getMessage());
             response.sendRedirect("bill?action=list");
         }
     }

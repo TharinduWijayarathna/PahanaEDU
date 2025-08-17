@@ -60,8 +60,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-book mr-2"></i>Book Title
 				</label> <input type="text" id="name" name="name" required
-					value="${product.name}"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					value="${name != null ? name : product.name}"
+					class="w-full px-4 py-3 border ${fieldErrors.name != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.name != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.name}</p>
+				</c:if>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -70,8 +73,11 @@
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
 						class="fas fa-barcode mr-2"></i>ISBN
 					</label> <input type="text" id="isbn" name="isbn"
-						value="${product.isbn}" placeholder="e.g., 978-0134685991"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+						value="${isbn != null ? isbn : product.isbn}" placeholder="e.g., 978-0134685991"
+						class="w-full px-4 py-3 border ${fieldErrors.isbn != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+					<c:if test="${fieldErrors.isbn != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.isbn}</p>
+					</c:if>
 				</div>
 
 				<div>
@@ -79,8 +85,11 @@
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
 						class="fas fa-tag mr-2"></i>Price (Rs.)
 					</label> <input type="number" step="0.01" id="price" name="price" required
-						value="${product.price}"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+						value="${price != null ? price : product.price}"
+						class="w-full px-4 py-3 border ${fieldErrors.price != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+					<c:if test="${fieldErrors.price != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.price}</p>
+					</c:if>
 				</div>
 			</div>
 
@@ -90,8 +99,11 @@
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
 						class="fas fa-user mr-2"></i>Author
 					</label> <input type="text" id="author" name="author"
-						value="${product.author}" placeholder="Enter author name"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+						value="${author != null ? author : product.author}" placeholder="Enter author name"
+						class="w-full px-4 py-3 border ${fieldErrors.author != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+					<c:if test="${fieldErrors.author != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.author}</p>
+					</c:if>
 				</div>
 
 				<div>
@@ -99,8 +111,11 @@
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
 						class="fas fa-building mr-2"></i>Publisher
 					</label> <input type="text" id="publisher" name="publisher"
-						value="${product.publisher}" placeholder="Enter publisher name"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+						value="${publisher != null ? publisher : product.publisher}" placeholder="Enter publisher name"
+						class="w-full px-4 py-3 border ${fieldErrors.publisher != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+					<c:if test="${fieldErrors.publisher != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.publisher}</p>
+					</c:if>
 				</div>
 			</div>
 
@@ -109,8 +124,11 @@
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
 					class="fas fa-calendar mr-2"></i>Publication Date
 				</label> <input type="date" id="publicationDate" name="publicationDate"
-					value="<fmt:formatDate value='${product.publicationDate}' pattern='yyyy-MM-dd'/>"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					value="${publicationDate != null ? publicationDate : fmt:formatDate(value='${product.publicationDate}', pattern='yyyy-MM-dd')}"
+					class="w-full px-4 py-3 border ${fieldErrors.publicationDate != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.publicationDate != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.publicationDate}</p>
+				</c:if>
 			</div>
 
 			<div>
@@ -119,7 +137,10 @@
 					class="fas fa-align-left mr-2"></i>Description
 				</label>
 				<textarea id="description" name="description"
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200 min-h-[120px] resize-none">${product.description}</textarea>
+					class="w-full px-4 py-3 border ${fieldErrors.description != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200 min-h-[120px] resize-none">${description != null ? description : product.description}</textarea>
+				<c:if test="${fieldErrors.description != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.description}</p>
+				</c:if>
 			</div>
 
 			<div class="flex items-center gap-4 pt-4">

@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.pahana.model.Product;
 import edu.pahana.service.ProductService;
+import edu.pahana.validation.ValidationUtils;
 
 @WebServlet("/product")
 public class ProductController extends HttpServlet {
@@ -90,12 +92,40 @@ public class ProductController extends HttpServlet {
 
 	    private void addProduct(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	        String name = request.getParameter("name");
-	        double price = Double.parseDouble(request.getParameter("price"));
+	        String priceStr = request.getParameter("price");
 	        String description = request.getParameter("description");
 	        String isbn = request.getParameter("isbn");
 	        String author = request.getParameter("author");
 	        String publisher = request.getParameter("publisher");
 	        String publicationDateStr = request.getParameter("publicationDate");
+	        
+	        // Sanitize inputs
+	        name = ValidationUtils.sanitizeString(name);
+	        description = ValidationUtils.sanitizeString(description);
+	        isbn = ValidationUtils.sanitizeString(isbn);
+	        author = ValidationUtils.sanitizeString(author);
+	        publisher = ValidationUtils.sanitizeString(publisher);
+	        publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
+	        
+	        // Validate input
+	        Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, isbn, author, publisher);
+	        
+	        if (!validationErrors.isEmpty()) {
+	            // Validation failed - show errors
+	            request.setAttribute("fieldErrors", validationErrors);
+	            request.setAttribute("name", name);
+	            request.setAttribute("price", priceStr);
+	            request.setAttribute("description", description);
+	            request.setAttribute("isbn", isbn);
+	            request.setAttribute("author", author);
+	            request.setAttribute("publisher", publisher);
+	            request.setAttribute("publicationDate", publicationDateStr);
+	            request.getRequestDispatcher("WEB-INF/view/product/addProduct.jsp").forward(request, response);
+	            return;
+	        }
+	        
+	        // Parse price
+	        double price = Double.parseDouble(priceStr);
 	        
 	        Date publicationDate = null;
 	        if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
@@ -104,7 +134,14 @@ public class ProductController extends HttpServlet {
 	                publicationDate = dateFormat.parse(publicationDateStr);
 	            } catch (ParseException e) {
 	                // Handle date parsing error
-	                request.setAttribute("errorMessage", "Invalid publication date format. Use YYYY-MM-DD.");
+	                request.setAttribute("error", "Invalid publication date format. Use YYYY-MM-DD.");
+	                request.setAttribute("name", name);
+	                request.setAttribute("price", priceStr);
+	                request.setAttribute("description", description);
+	                request.setAttribute("isbn", isbn);
+	                request.setAttribute("author", author);
+	                request.setAttribute("publisher", publisher);
+	                request.setAttribute("publicationDate", publicationDateStr);
 	                request.getRequestDispatcher("WEB-INF/view/product/addProduct.jsp").forward(request, response);
 	                return;
 	            }
@@ -123,8 +160,15 @@ public class ProductController extends HttpServlet {
 	            productService.addProduct(product);
 	            response.sendRedirect("product?action=list");
 	        } catch (SQLException e) {
-	            request.setAttribute("errorMessage", e.getMessage());
-	            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+	            request.setAttribute("error", "Database error: " + e.getMessage());
+	            request.setAttribute("name", name);
+	            request.setAttribute("price", priceStr);
+	            request.setAttribute("description", description);
+	            request.setAttribute("isbn", isbn);
+	            request.setAttribute("author", author);
+	            request.setAttribute("publisher", publisher);
+	            request.setAttribute("publicationDate", publicationDateStr);
+	            request.getRequestDispatcher("WEB-INF/view/product/addProduct.jsp").forward(request, response);
 	        }
 	    }
 	    
@@ -155,12 +199,41 @@ public class ProductController extends HttpServlet {
 	    private void updateProduct(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	        int productId = Integer.parseInt(request.getParameter("id"));
 	        String name = request.getParameter("name");
-	        double price = Double.parseDouble(request.getParameter("price"));
+	        String priceStr = request.getParameter("price");
 	        String description = request.getParameter("description");
 	        String isbn = request.getParameter("isbn");
 	        String author = request.getParameter("author");
 	        String publisher = request.getParameter("publisher");
 	        String publicationDateStr = request.getParameter("publicationDate");
+	        
+	        // Sanitize inputs
+	        name = ValidationUtils.sanitizeString(name);
+	        description = ValidationUtils.sanitizeString(description);
+	        isbn = ValidationUtils.sanitizeString(isbn);
+	        author = ValidationUtils.sanitizeString(author);
+	        publisher = ValidationUtils.sanitizeString(publisher);
+	        publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
+	        
+	        // Validate input
+	        Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, isbn, author, publisher);
+	        
+	        if (!validationErrors.isEmpty()) {
+	            // Validation failed - show errors
+	            request.setAttribute("fieldErrors", validationErrors);
+	            request.setAttribute("productId", productId);
+	            request.setAttribute("name", name);
+	            request.setAttribute("price", priceStr);
+	            request.setAttribute("description", description);
+	            request.setAttribute("isbn", isbn);
+	            request.setAttribute("author", author);
+	            request.setAttribute("publisher", publisher);
+	            request.setAttribute("publicationDate", publicationDateStr);
+	            request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
+	            return;
+	        }
+	        
+	        // Parse price
+	        double price = Double.parseDouble(priceStr);
 	        
 	        Date publicationDate = null;
 	        if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
@@ -169,7 +242,15 @@ public class ProductController extends HttpServlet {
 	                publicationDate = dateFormat.parse(publicationDateStr);
 	            } catch (ParseException e) {
 	                // Handle date parsing error
-	                request.setAttribute("errorMessage", "Invalid publication date format. Use YYYY-MM-DD.");
+	                request.setAttribute("error", "Invalid publication date format. Use YYYY-MM-DD.");
+	                request.setAttribute("productId", productId);
+	                request.setAttribute("name", name);
+	                request.setAttribute("price", priceStr);
+	                request.setAttribute("description", description);
+	                request.setAttribute("isbn", isbn);
+	                request.setAttribute("author", author);
+	                request.setAttribute("publisher", publisher);
+	                request.setAttribute("publicationDate", publicationDateStr);
 	                request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 	                return;
 	            }
@@ -181,8 +262,16 @@ public class ProductController extends HttpServlet {
 	            productService.updateProduct(product);
 	            response.sendRedirect("product?action=list");
 	        } catch (SQLException e) {
-	            request.setAttribute("errorMessage", e.getMessage());
-	            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+	            request.setAttribute("error", "Database error: " + e.getMessage());
+	            request.setAttribute("productId", productId);
+	            request.setAttribute("name", name);
+	            request.setAttribute("price", priceStr);
+	            request.setAttribute("description", description);
+	            request.setAttribute("isbn", isbn);
+	            request.setAttribute("author", author);
+	            request.setAttribute("publisher", publisher);
+	            request.setAttribute("publicationDate", publicationDateStr);
+	            request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 	        }
 	    }
 	    

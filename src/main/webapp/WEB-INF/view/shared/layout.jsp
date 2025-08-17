@@ -137,37 +137,5 @@
 			</div>
 		</div>
 	</nav>
-
-	<!-- Main Content Wrapper -->
-	<!-- <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-       
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">${pageTitle}</h1>
-            <c:if test="${not empty pageSubtitle}">
-                <p class="text-gray-600 mt-2">${pageSubtitle}</p>
-            </c:if>
-        </div>
-
-  
-        <c:if test="${not empty success}">
-            <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                    <span class="text-green-800">${success}</span>
-                </div>
-            </div>
-        </c:if>
-        
-        <c:if test="${not empty error}">
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
-                    <span class="text-red-800">${error}</span>
-                </div>
-            </div>
-        </c:if>
-        
-
-    </div> -->
 </body>
 </html>

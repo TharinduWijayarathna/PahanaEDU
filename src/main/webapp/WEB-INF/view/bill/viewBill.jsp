@@ -89,12 +89,12 @@
 						type="hidden" name="billId" value="${bill.billId}"> <label
 						for="status" class="text-sm text-gray-600">Update Status:</label>
 					<select name="status" id="status"
-						class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+						class="px-3 py-2 border ${fieldErrors.status != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
 						<option value="pending"
-							${bill.status=='pending' ? 'selected' : '' }>Pending</option>
-						<option value="paid" ${bill.status=='paid' ? 'selected' : '' }>Paid</option>
+							${status != null ? (status == 'pending' ? 'selected' : '') : (bill.status=='pending' ? 'selected' : '')}>Pending</option>
+						<option value="paid" ${status != null ? (status == 'paid' ? 'selected' : '') : (bill.status=='paid' ? 'selected' : '')}>Paid</option>
 						<option value="cancelled"
-							${bill.status=='cancelled' ? 'selected' : '' }>
+							${status != null ? (status == 'cancelled' ? 'selected' : '') : (bill.status=='cancelled' ? 'selected' : '')}>
 							Cancelled</option>
 					</select>
 					<button type="submit"
@@ -102,6 +102,9 @@
 						<i class="fas fa-save mr-1"></i>Update
 					</button>
 				</form>
+				<c:if test="${fieldErrors.status != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.status}</p>
+				</c:if>
 			</div>
 		</div>
 
