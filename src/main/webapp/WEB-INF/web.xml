@@ -5,15 +5,14 @@
          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
   <display-name>Pahana Edu Bookshop Management System</display-name>
-  
 
-  
-  <!-- Session Configuration -->
+
+	<!-- Session Configuration -->
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>
-  
-  <!-- Welcome File List -->
+
+	<!-- Welcome File List -->
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>

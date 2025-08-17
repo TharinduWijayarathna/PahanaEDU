@@ -57,6 +57,95 @@ public class ActivityDAO {
 	}
 
 	/**
+	 * Get activities with pagination
+	 */
+	public List<Activity> getActivitiesPaginated(int offset, int limit) throws SQLException {
+		String sql = "SELECT * FROM activities ORDER BY timestamp DESC LIMIT ? OFFSET ?";
+		List<Activity> activities = new ArrayList<>();
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			pstmt.setInt(1, limit);
+			pstmt.setInt(2, offset);
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				activities.add(mapResultSetToActivity(rs));
+			}
+		}
+
+		return activities;
+	}
+
+	/**
+	 * Get total count of activities
+	 */
+	public int getActivityCount() throws SQLException {
+		String sql = "SELECT COUNT(*) FROM activities";
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery()) {
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Search activities with pagination
+	 */
+	public List<Activity> searchActivitiesPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		String sql = "SELECT * FROM activities WHERE description LIKE ? OR entity_name LIKE ? OR username LIKE ? ORDER BY timestamp DESC LIMIT ? OFFSET ?";
+		List<Activity> activities = new ArrayList<>();
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			String searchPattern = "%" + searchTerm + "%";
+			pstmt.setString(1, searchPattern);
+			pstmt.setString(2, searchPattern);
+			pstmt.setString(3, searchPattern);
+			pstmt.setInt(4, limit);
+			pstmt.setInt(5, offset);
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				activities.add(mapResultSetToActivity(rs));
+			}
+		}
+
+		return activities;
+	}
+
+	/**
+	 * Get count of activities matching search term
+	 */
+	public int getActivitySearchCount(String searchTerm) throws SQLException {
+		String sql = "SELECT COUNT(*) FROM activities WHERE description LIKE ? OR entity_name LIKE ? OR username LIKE ?";
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			String searchPattern = "%" + searchTerm + "%";
+			pstmt.setString(1, searchPattern);
+			pstmt.setString(2, searchPattern);
+			pstmt.setString(3, searchPattern);
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Get recent activities with limit
 	 */
 	public List<Activity> getRecentActivities(int limit) throws SQLException {

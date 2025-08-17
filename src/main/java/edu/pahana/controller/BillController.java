@@ -9,6 +9,8 @@ import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -102,8 +104,34 @@ public class BillController extends HttpServlet {
 			throws ServletException, IOException {
 
 		try {
-			List<Bill> bills = billService.getAllBills();
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
+			String searchTerm = request.getParameter("search");
+
+			List<Bill> bills;
+			int totalItems;
+
+			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+				// Search bills with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				bills = billService.searchBillsPaginated(searchTerm.trim(), offset, pageSize);
+				totalItems = billService.getBillSearchCount(searchTerm.trim());
+			} else {
+				// Get all bills with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				bills = billService.getBillsPaginated(offset, pageSize);
+				totalItems = billService.getBillCount();
+			}
+
+			// Create pagination data
+			PaginationData paginationData = PaginationUtil.createPaginationData(bills, page, pageSize, totalItems);
+
+			// Set attributes for JSP
 			request.setAttribute("bills", bills);
+			request.setAttribute("pagination", paginationData);
+			request.setAttribute("searchTerm", searchTerm != null ? searchTerm.trim() : "");
+
 		} catch (Exception e) {
 			request.setAttribute("error", "Error loading bills: " + e.getMessage());
 		}
@@ -198,12 +226,13 @@ public class BillController extends HttpServlet {
 			List<BillItem> items = new ArrayList<>();
 			Map<String, String> validationErrors = new java.util.HashMap<>();
 
+			// First pass: validate all items and check stock
 			for (int i = 0; i < productIds.length; i++) {
 				if (productIds[i] != null && !productIds[i].trim().isEmpty() && quantities[i] != null
 						&& !quantities[i].trim().isEmpty() && unitPrices[i] != null
 						&& !unitPrices[i].trim().isEmpty()) {
 
-					// Validate bill item (no discount validation needed for items)
+					// Validate bill item
 					Map<String, String> itemErrors = ValidationUtils.validateBillItem(productIds[i], quantities[i],
 							unitPrices[i]);
 
@@ -217,10 +246,16 @@ public class BillController extends HttpServlet {
 
 							Product product = productService.getProductById(productId);
 							if (product != null) {
-								BillItem item = new BillItem(productId, product.getName(), quantity,
-										BigDecimal.valueOf(unitPrice));
-								item.calculateSubtotal();
-								items.add(item);
+								// Check stock availability
+								if (product.getQuantity() < quantity) {
+									validationErrors.put("stock_" + i, "Insufficient stock for " + product.getName()
+											+ ". Available: " + product.getQuantity() + ", Requested: " + quantity);
+								} else {
+									BillItem item = new BillItem(productId, product.getName(), quantity,
+											BigDecimal.valueOf(unitPrice));
+									item.calculateSubtotal();
+									items.add(item);
+								}
 							} else {
 								validationErrors.put("productId", "Invalid product selected");
 							}
@@ -266,6 +301,16 @@ public class BillController extends HttpServlet {
 			Bill bill = billService.createBillFromItems(customerId, items, BigDecimal.valueOf(billDiscount));
 
 			if (bill != null && billService.createBill(bill)) {
+				// Update stock quantities
+				try {
+					for (BillItem item : items) {
+						productService.updateStockQuantity(item.getProductId(), item.getQuantity());
+					}
+				} catch (Exception e) {
+					// Log error but don't fail bill creation
+					System.err.println("Failed to update stock quantities: " + e.getMessage());
+				}
+
 				// Log bill creation activity
 				try {
 					HttpSession session = request.getSession(false);

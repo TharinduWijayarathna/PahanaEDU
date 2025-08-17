@@ -68,10 +68,19 @@
 			</div>
 			<div class="bg-green-50 border border-green-200 rounded-lg p-4">
 				<div class="flex items-center mb-2">
-					<i class="fas fa-check-circle text-green-600 mr-2"></i>
-					<div class="text-green-700 text-sm font-medium">Status</div>
+					<i class="fas fa-boxes text-green-600 mr-2"></i>
+					<div class="text-green-700 text-sm font-medium">Stock Quantity</div>
 				</div>
-				<div class="text-xl font-semibold text-green-800">Active</div>
+				<div class="text-xl font-semibold text-green-800">
+					<c:choose>
+						<c:when test="${product.quantity > 0}">
+							${product.quantity} units in stock
+						</c:when>
+						<c:otherwise>
+							<span class="text-red-600">Out of stock</span>
+						</c:otherwise>
+					</c:choose>
+				</div>
 			</div>
 		</div>
 

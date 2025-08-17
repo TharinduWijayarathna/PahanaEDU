@@ -20,6 +20,8 @@ import edu.pahana.model.Product;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 @WebServlet("/product")
 public class ProductController extends HttpServlet {
@@ -85,10 +87,36 @@ public class ProductController extends HttpServlet {
 	private void listProducts(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		List<Product> productList = new ArrayList<Product>();
 		try {
-			productList = productService.getAllProducts();
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
+			String searchTerm = request.getParameter("search");
+
+			List<Product> productList;
+			int totalItems;
+
+			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+				// Search products with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				productList = productService.searchProductsPaginated(searchTerm.trim(), offset, pageSize);
+				totalItems = productService.getProductSearchCount(searchTerm.trim());
+			} else {
+				// Get all products with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				productList = productService.getProductsPaginated(offset, pageSize);
+				totalItems = productService.getProductCount();
+			}
+
+			// Create pagination data
+			PaginationData paginationData = PaginationUtil.createPaginationData(productList, page, pageSize,
+					totalItems);
+
+			// Set attributes for JSP
 			request.setAttribute("products", productList);
+			request.setAttribute("pagination", paginationData);
+			request.setAttribute("searchTerm", searchTerm != null ? searchTerm.trim() : "");
+
 		} catch (SQLException e) {
 			request.setAttribute("errorMessage", e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
@@ -107,6 +135,7 @@ public class ProductController extends HttpServlet {
 			throws ServletException, IOException {
 		String name = request.getParameter("name");
 		String priceStr = request.getParameter("price");
+		String quantityStr = request.getParameter("quantity");
 		String description = request.getParameter("description");
 		String isbn = request.getParameter("isbn");
 		String author = request.getParameter("author");
@@ -122,14 +151,15 @@ public class ProductController extends HttpServlet {
 		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, isbn,
-				author, publisher);
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr,
+				isbn, author, publisher);
 
 		if (!validationErrors.isEmpty()) {
 			// Validation failed - show errors
 			request.setAttribute("fieldErrors", validationErrors);
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -139,8 +169,9 @@ public class ProductController extends HttpServlet {
 			return;
 		}
 
-		// Parse price
+		// Parse price and quantity
 		double price = Double.parseDouble(priceStr);
+		int quantity = Integer.parseInt(quantityStr);
 
 		Date publicationDate = null;
 		if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
@@ -152,6 +183,7 @@ public class ProductController extends HttpServlet {
 				request.setAttribute("error", "Invalid publication date format. Use YYYY-MM-DD.");
 				request.setAttribute("name", name);
 				request.setAttribute("price", priceStr);
+				request.setAttribute("quantity", quantityStr);
 				request.setAttribute("description", description);
 				request.setAttribute("isbn", isbn);
 				request.setAttribute("author", author);
@@ -165,6 +197,7 @@ public class ProductController extends HttpServlet {
 		Product product = new Product();
 		product.setName(name);
 		product.setPrice(price);
+		product.setQuantity(quantity);
 		product.setDescription(description);
 		product.setIsbn(isbn);
 		product.setAuthor(author);
@@ -189,6 +222,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("error", "Database error: " + e.getMessage());
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -200,35 +234,91 @@ public class ProductController extends HttpServlet {
 
 	private void viewProduct(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int productId = Integer.parseInt(productIdStr);
 			Product product = productService.getProductById(productId);
+
+			if (product == null) {
+				request.setAttribute("errorMessage", "Product not found");
+				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+				return;
+			}
+
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/viewProduct.jsp").forward(request, response);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}
 
 	private void showEditForm(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int productId = Integer.parseInt(productIdStr);
 			Product product = productService.getProductById(productId);
+
+			if (product == null) {
+				request.setAttribute("errorMessage", "Product not found");
+				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+				return;
+			}
+
+			// Format the publication date for the HTML date input
+			if (product.getPublicationDate() != null) {
+				java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
+				String formattedDate = dateFormat.format(product.getPublicationDate());
+				request.setAttribute("formattedPublicationDate", formattedDate);
+			}
+
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}
 
 	private void updateProduct(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
+		int productId;
+		try {
+			productId = Integer.parseInt(productIdStr);
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
 		String name = request.getParameter("name");
 		String priceStr = request.getParameter("price");
+		String quantityStr = request.getParameter("quantity");
 		String description = request.getParameter("description");
 		String isbn = request.getParameter("isbn");
 		String author = request.getParameter("author");
@@ -244,8 +334,8 @@ public class ProductController extends HttpServlet {
 		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, isbn,
-				author, publisher);
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr,
+				isbn, author, publisher);
 
 		if (!validationErrors.isEmpty()) {
 			// Validation failed - show errors
@@ -253,6 +343,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("productId", productId);
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -262,8 +353,9 @@ public class ProductController extends HttpServlet {
 			return;
 		}
 
-		// Parse price
+		// Parse price and quantity
 		double price = Double.parseDouble(priceStr);
+		int quantity = Integer.parseInt(quantityStr);
 
 		Date publicationDate = null;
 		if (publicationDateStr != null && !publicationDateStr.trim().isEmpty()) {
@@ -276,6 +368,7 @@ public class ProductController extends HttpServlet {
 				request.setAttribute("productId", productId);
 				request.setAttribute("name", name);
 				request.setAttribute("price", priceStr);
+				request.setAttribute("quantity", quantityStr);
 				request.setAttribute("description", description);
 				request.setAttribute("isbn", isbn);
 				request.setAttribute("author", author);
@@ -286,7 +379,8 @@ public class ProductController extends HttpServlet {
 			}
 		}
 
-		Product product = new Product(productId, name, description, price, isbn, author, publisher, publicationDate);
+		Product product = new Product(productId, name, description, price, quantity, isbn, author, publisher,
+				publicationDate);
 
 		try {
 			productService.updateProduct(product);
@@ -296,6 +390,7 @@ public class ProductController extends HttpServlet {
 			request.setAttribute("productId", productId);
 			request.setAttribute("name", name);
 			request.setAttribute("price", priceStr);
+			request.setAttribute("quantity", quantityStr);
 			request.setAttribute("description", description);
 			request.setAttribute("isbn", isbn);
 			request.setAttribute("author", author);
@@ -307,12 +402,22 @@ public class ProductController extends HttpServlet {
 
 	private void deleteProduct(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int productId = Integer.parseInt(request.getParameter("id"));
+		String productIdStr = request.getParameter("id");
+		if (productIdStr == null || productIdStr.trim().isEmpty()) {
+			request.setAttribute("errorMessage", "Product ID is required");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
 		try {
+			int productId = Integer.parseInt(productIdStr);
 			productService.deleteProduct(productId);
 			response.sendRedirect("product?action=list");
+		} catch (NumberFormatException e) {
+			request.setAttribute("errorMessage", "Invalid product ID");
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		} catch (SQLException e) {
-			request.setAttribute("errorMessage", e.getMessage());
+			request.setAttribute("errorMessage", "Database error: " + e.getMessage());
 			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 		}
 	}

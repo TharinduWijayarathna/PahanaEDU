@@ -42,6 +42,7 @@ public class ProductServiceTest {
 		testProduct.setName("Test Book");
 		testProduct.setDescription("A test book for testing");
 		testProduct.setPrice(29.99);
+		testProduct.setQuantity(50); // Add quantity field
 
 		// Create existing product for duplicate tests
 		existingProduct = new Product();
@@ -49,6 +50,7 @@ public class ProductServiceTest {
 		existingProduct.setName("Existing Book");
 		existingProduct.setDescription("An existing book");
 		existingProduct.setPrice(19.99);
+		existingProduct.setQuantity(25); // Add quantity field
 	}
 
 	@Test
@@ -63,7 +65,7 @@ public class ProductServiceTest {
 	@Test
 	public void testAddProduct_Success() throws SQLException {
 		// Arrange
-		Product newProduct = new Product(0, "New Book", "A new book", 39.99, "1234567890", "Author", "Publisher",
+		Product newProduct = new Product(0, "New Book", "A new book", 39.99, 30, "1234567890", "Author", "Publisher",
 				new Date(System.currentTimeMillis()));
 		doNothing().when(productDAO).addProduct(newProduct);
 
@@ -77,7 +79,7 @@ public class ProductServiceTest {
 	@Test
 	public void testAddProduct_DatabaseError() throws SQLException {
 		// Arrange
-		Product newProduct = new Product(0, "New Book", "A new book", 39.99, "1234567890", "Author", "Publisher",
+		Product newProduct = new Product(0, "New Book", "A new book", 39.99, 30, "1234567890", "Author", "Publisher",
 				new Date(System.currentTimeMillis()));
 		doThrow(new SQLException("Database error")).when(productDAO).addProduct(newProduct);
 
@@ -155,6 +157,7 @@ public class ProductServiceTest {
 		assertEquals("Product ID should match", productId, result.getProductId());
 		assertEquals("Product name should match", "Test Book", result.getName());
 		assertEquals("Product price should match", 29.99, result.getPrice(), 0.01);
+		assertEquals("Product quantity should match", 50, result.getQuantity());
 		verify(productDAO).getProductById(productId);
 	}
 
@@ -191,8 +194,8 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_Success() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(1, "Updated Book", "Updated description", 49.99, "1234567890", "Author",
-				"Publisher", new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(1, "Updated Book", "Updated description", 49.99, 40, "1234567890",
+				"Author", "Publisher", new Date(System.currentTimeMillis()));
 		when(productDAO.updateProduct(productToUpdate)).thenReturn(true);
 
 		// Act
@@ -206,7 +209,7 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_Failure() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(999, "Nonexistent Book", "Description", 29.99, "1234567890", "Author",
+		Product productToUpdate = new Product(999, "Nonexistent Book", "Description", 29.99, 15, "1234567890", "Author",
 				"Publisher", new Date(System.currentTimeMillis()));
 		when(productDAO.updateProduct(productToUpdate)).thenReturn(false);
 
@@ -221,8 +224,8 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_DatabaseError() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(1, "Test Book", "Description", 29.99, "1234567890", "Author", "Publisher",
-				new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(1, "Test Book", "Description", 29.99, 20, "1234567890", "Author",
+				"Publisher", new Date(System.currentTimeMillis()));
 		when(productDAO.updateProduct(productToUpdate)).thenThrow(new SQLException("Database error"));
 
 		// Act & Assert
@@ -279,7 +282,113 @@ public class ProductServiceTest {
 		verify(productDAO).deleteProduct(productId);
 	}
 
-	// Note: ProductService doesn't have search or category methods in the current
-	// implementation
-	// These tests are removed as they reference non-existent methods
+	// New tests for stock management functionality
+	@Test
+	public void testUpdateStockQuantity_Success() throws SQLException {
+		// Arrange
+		int productId = 1;
+		int quantityToReduce = 5;
+		when(productDAO.updateStockQuantity(productId, quantityToReduce)).thenReturn(true);
+
+		// Act
+		boolean result = productService.updateStockQuantity(productId, quantityToReduce);
+
+		// Assert
+		assertTrue("Stock update should succeed", result);
+		verify(productDAO).updateStockQuantity(productId, quantityToReduce);
+	}
+
+	@Test
+	public void testUpdateStockQuantity_Failure() throws SQLException {
+		// Arrange
+		int productId = 1;
+		int quantityToReduce = 100; // More than available stock
+		when(productDAO.updateStockQuantity(productId, quantityToReduce)).thenReturn(false);
+
+		// Act
+		boolean result = productService.updateStockQuantity(productId, quantityToReduce);
+
+		// Assert
+		assertFalse("Stock update should fail when insufficient stock", result);
+		verify(productDAO).updateStockQuantity(productId, quantityToReduce);
+	}
+
+	@Test
+	public void testUpdateStockQuantity_DatabaseError() throws SQLException {
+		// Arrange
+		int productId = 1;
+		int quantityToReduce = 5;
+		when(productDAO.updateStockQuantity(productId, quantityToReduce)).thenThrow(new SQLException("Database error"));
+
+		// Act & Assert
+		try {
+			productService.updateStockQuantity(productId, quantityToReduce);
+			fail("Should throw SQLException");
+		} catch (SQLException e) {
+			assertEquals("Database error", e.getMessage());
+		}
+		verify(productDAO).updateStockQuantity(productId, quantityToReduce);
+	}
+
+	@Test
+	public void testHasSufficientStock_Success() throws SQLException {
+		// Arrange
+		int productId = 1;
+		int requiredQuantity = 10;
+		when(productDAO.hasSufficientStock(productId, requiredQuantity)).thenReturn(true);
+
+		// Act
+		boolean result = productService.hasSufficientStock(productId, requiredQuantity);
+
+		// Assert
+		assertTrue("Should have sufficient stock", result);
+		verify(productDAO).hasSufficientStock(productId, requiredQuantity);
+	}
+
+	@Test
+	public void testHasSufficientStock_InsufficientStock() throws SQLException {
+		// Arrange
+		int productId = 1;
+		int requiredQuantity = 100;
+		when(productDAO.hasSufficientStock(productId, requiredQuantity)).thenReturn(false);
+
+		// Act
+		boolean result = productService.hasSufficientStock(productId, requiredQuantity);
+
+		// Assert
+		assertFalse("Should not have sufficient stock", result);
+		verify(productDAO).hasSufficientStock(productId, requiredQuantity);
+	}
+
+	@Test
+	public void testHasSufficientStock_DatabaseError() throws SQLException {
+		// Arrange
+		int productId = 1;
+		int requiredQuantity = 10;
+		when(productDAO.hasSufficientStock(productId, requiredQuantity)).thenThrow(new SQLException("Database error"));
+
+		// Act & Assert
+		try {
+			productService.hasSufficientStock(productId, requiredQuantity);
+			fail("Should throw SQLException");
+		} catch (SQLException e) {
+			assertEquals("Database error", e.getMessage());
+		}
+		verify(productDAO).hasSufficientStock(productId, requiredQuantity);
+	}
+
+	@Test
+	public void testProductQuantityField() {
+		// Test that quantity field works correctly
+		Product product = new Product();
+		product.setQuantity(25);
+
+		assertEquals("Quantity should be set correctly", 25, product.getQuantity());
+
+		product.setQuantity(0);
+		assertEquals("Quantity should handle zero", 0, product.getQuantity());
+
+		product.setQuantity(1000);
+		assertEquals("Quantity should handle large numbers", 1000, product.getQuantity());
+	}
 }

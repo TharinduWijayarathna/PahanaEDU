@@ -133,6 +133,186 @@ public class BillDAO {
 		return bills;
 	}
 
+	/**
+	 * Gets paginated bills from the database
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of bills for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> getBillsPaginated(int offset, int limit) throws SQLException {
+		String sql = "SELECT b.*, c.name as customer_name, c.account_number " + "FROM Bill b "
+				+ "JOIN Customer c ON b.customer_id = c.customer_id " + "ORDER BY b.bill_date DESC LIMIT ? OFFSET ?";
+
+		List<Bill> bills = new ArrayList<>();
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			pstmt.setInt(1, limit);
+			pstmt.setInt(2, offset);
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				Bill bill = new Bill();
+				bill.setBillId(rs.getInt("bill_id"));
+				bill.setCustomerId(rs.getInt("customer_id"));
+				bill.setCustomerName(rs.getString("customer_name"));
+				bill.setAccountNumber(rs.getString("account_number"));
+				bill.setBillDate(rs.getTimestamp("bill_date").toLocalDateTime());
+				bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+				bill.setDiscount(rs.getBigDecimal("discount"));
+				bill.setStatus(rs.getString("status"));
+
+				bills.add(bill);
+			}
+
+		}
+
+		return bills;
+	}
+
+	/**
+	 * Gets the total count of bills
+	 * 
+	 * @return Total number of bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getBillCount() throws SQLException {
+		String sql = "SELECT COUNT(*) FROM Bill";
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Searches bills by customer name, account number, or bill ID
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> searchBills(String searchTerm) throws SQLException {
+		String sql = "SELECT b.*, c.name as customer_name, c.account_number " + "FROM Bill b "
+				+ "JOIN Customer c ON b.customer_id = c.customer_id "
+				+ "WHERE c.name LIKE ? OR c.account_number LIKE ? OR CAST(b.bill_id AS CHAR) LIKE ? "
+				+ "ORDER BY b.bill_date DESC";
+
+		List<Bill> bills = new ArrayList<>();
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			String searchPattern = "%" + searchTerm + "%";
+			pstmt.setString(1, searchPattern);
+			pstmt.setString(2, searchPattern);
+			pstmt.setString(3, searchPattern);
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				Bill bill = new Bill();
+				bill.setBillId(rs.getInt("bill_id"));
+				bill.setCustomerId(rs.getInt("customer_id"));
+				bill.setCustomerName(rs.getString("customer_name"));
+				bill.setAccountNumber(rs.getString("account_number"));
+				bill.setBillDate(rs.getTimestamp("bill_date").toLocalDateTime());
+				bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+				bill.setDiscount(rs.getBigDecimal("discount"));
+				bill.setStatus(rs.getString("status"));
+
+				bills.add(bill);
+			}
+
+		}
+
+		return bills;
+	}
+
+	/**
+	 * Searches bills by customer name, account number, or bill ID with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching bills for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> searchBillsPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		String sql = "SELECT b.*, c.name as customer_name, c.account_number " + "FROM Bill b "
+				+ "JOIN Customer c ON b.customer_id = c.customer_id "
+				+ "WHERE c.name LIKE ? OR c.account_number LIKE ? OR CAST(b.bill_id AS CHAR) LIKE ? "
+				+ "ORDER BY b.bill_date DESC LIMIT ? OFFSET ?";
+
+		List<Bill> bills = new ArrayList<>();
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			String searchPattern = "%" + searchTerm + "%";
+			pstmt.setString(1, searchPattern);
+			pstmt.setString(2, searchPattern);
+			pstmt.setString(3, searchPattern);
+			pstmt.setInt(4, limit);
+			pstmt.setInt(5, offset);
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				Bill bill = new Bill();
+				bill.setBillId(rs.getInt("bill_id"));
+				bill.setCustomerId(rs.getInt("customer_id"));
+				bill.setCustomerName(rs.getString("customer_name"));
+				bill.setAccountNumber(rs.getString("account_number"));
+				bill.setBillDate(rs.getTimestamp("bill_date").toLocalDateTime());
+				bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+				bill.setDiscount(rs.getBigDecimal("discount"));
+				bill.setStatus(rs.getString("status"));
+
+				bills.add(bill);
+			}
+
+		}
+
+		return bills;
+	}
+
+	/**
+	 * Gets the count of bills matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getBillSearchCount(String searchTerm) throws SQLException {
+		String sql = "SELECT COUNT(*) FROM Bill b " + "JOIN Customer c ON b.customer_id = c.customer_id "
+				+ "WHERE c.name LIKE ? OR c.account_number LIKE ? OR CAST(b.bill_id AS CHAR) LIKE ?";
+
+		try (Connection conn = DBConnectionFactory.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			String searchPattern = "%" + searchTerm + "%";
+			pstmt.setString(1, searchPattern);
+			pstmt.setString(2, searchPattern);
+			pstmt.setString(3, searchPattern);
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+
+		return 0;
+	}
+
 	public boolean updateBillStatus(int billId, String status) throws SQLException {
 		String sql = "UPDATE Bill SET status = ? WHERE bill_id = ?";
 

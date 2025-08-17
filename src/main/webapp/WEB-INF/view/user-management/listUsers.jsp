@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ include file="../shared/layout.jsp"%>
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -43,14 +44,44 @@
 			<div class="flex-1">
 				<input type="text" name="search" value="${param.search}"
 					placeholder="Search users by username or role..."
-					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
+					class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
 			</div>
-			<button type="submit"
-				class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
-				<i class="fas fa-search mr-2"></i>Search
-			</button>
+			<div class="flex items-center space-x-2">
+				<select name="pageSize" class="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+					<option value="10" ${param.pageSize == '10' || empty param.pageSize ? 'selected' : ''}>10 per page</option>
+					<option value="25" ${param.pageSize == '25' ? 'selected' : ''}>25 per page</option>
+					<option value="50" ${param.pageSize == '50' ? 'selected' : ''}>50 per page</option>
+					<option value="100" ${param.pageSize == '100' ? 'selected' : ''}>100 per page</option>
+				</select>
+				<button type="submit"
+					class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
+					<i class="fas fa-search mr-2"></i>Search
+				</button>
+				<c:if test="${not empty param.search}">
+					<a href="user-management?action=list"
+						class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
+						<i class="fas fa-times mr-2"></i>Clear
+					</a>
+				</c:if>
+			</div>
 		</form>
 	</div>
+
+	<!-- Search Results Info -->
+	<c:if test="${not empty param.search}">
+		<div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+			<div class="flex items-center">
+				<i class="fas fa-search text-blue-500 mr-2"></i>
+				<span class="text-blue-800">
+					Search results for "<strong>${param.search}</strong>" - 
+					<c:choose>
+						<c:when test="${empty users}">No users found</c:when>
+						<c:otherwise>${pagination.totalItems} user(s) found</c:otherwise>
+					</c:choose>
+				</span>
+			</div>
+		</div>
+	</c:if>
 
 	<!-- Users Table -->
 	<div
@@ -105,7 +136,7 @@
 										class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
 										<i class="fas fa-edit"></i>
 									</a>
-									<c:if test="${user.userId != sessionScope.userId}">
+									<c:if test="${user.userId != sessionScope.user.userId}">
 										<a href="user-management?action=delete&id=${user.userId}"
 											onclick="return confirm('Are you sure you want to delete this user?')"
 											class="text-red-600 hover:text-red-900 transition-colors duration-200">
@@ -136,4 +167,8 @@
 			</div>
 		</c:if>
 	</div>
+	
+	<!-- Pagination -->
+	<c:set var="paginationUrl" value="user-management" />
+	<%@ include file="../shared/pagination.jsp" %>
 </div>

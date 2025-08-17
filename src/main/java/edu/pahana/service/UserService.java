@@ -114,6 +114,63 @@ public class UserService {
 	}
 
 	/**
+	 * Searches users by username or role
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching users
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> searchUsers(String searchTerm) throws SQLException {
+		return userDAO.searchUsers(searchTerm);
+	}
+
+	/**
+	 * Gets paginated users
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of users for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> getUsersPaginated(int offset, int limit) throws SQLException {
+		return userDAO.getUsersPaginated(offset, limit);
+	}
+
+	/**
+	 * Searches users with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching users for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<User> searchUsersPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		return userDAO.searchUsersPaginated(searchTerm, offset, limit);
+	}
+
+	/**
+	 * Gets the total count of users
+	 * 
+	 * @return Total number of users
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getUserCount() throws SQLException {
+		return userDAO.getUserCount();
+	}
+
+	/**
+	 * Gets the count of users matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching users
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getUserSearchCount(String searchTerm) throws SQLException {
+		return userDAO.getUserSearchCount(searchTerm);
+	}
+
+	/**
 	 * Updates a user
 	 * 
 	 * @param user The user to update

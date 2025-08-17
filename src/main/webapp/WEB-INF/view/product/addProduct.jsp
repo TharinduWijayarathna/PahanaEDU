@@ -78,39 +78,51 @@
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<div>
-					<label for="author"
+					<label for="quantity"
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
-						class="fas fa-user mr-2"></i>Author
-					</label> <input type="text" id="author" name="author"
-						placeholder="Enter author name" value="${author}"
-						class="w-full px-4 py-3 border ${fieldErrors.author != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-					<c:if test="${fieldErrors.author != null}">
-						<p class="mt-1 text-sm text-red-600">${fieldErrors.author}</p>
+						class="fas fa-boxes mr-2"></i>Stock Quantity
+					</label> <input type="number" id="quantity" name="quantity" required
+						placeholder="0" min="0" value="${quantity}"
+						class="w-full px-4 py-3 border ${fieldErrors.quantity != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+					<c:if test="${fieldErrors.quantity != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.quantity}</p>
 					</c:if>
 				</div>
 
 				<div>
-					<label for="publisher"
+					<label for="publicationDate"
 						class="block text-sm font-medium text-gray-700 mb-2"> <i
-						class="fas fa-building mr-2"></i>Publisher
-					</label> <input type="text" id="publisher" name="publisher"
-						placeholder="Enter publisher name" value="${publisher}"
-						class="w-full px-4 py-3 border ${fieldErrors.publisher != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-					<c:if test="${fieldErrors.publisher != null}">
-						<p class="mt-1 text-sm text-red-600">${fieldErrors.publisher}</p>
+						class="fas fa-calendar mr-2"></i>Publication Date
+					</label> <input type="date" id="publicationDate" name="publicationDate"
+						value="${publicationDate}"
+						class="w-full px-4 py-3 border ${fieldErrors.publicationDate != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+					<c:if test="${fieldErrors.publicationDate != null}">
+						<p class="mt-1 text-sm text-red-600">${fieldErrors.publicationDate}</p>
 					</c:if>
 				</div>
 			</div>
 
 			<div>
-				<label for="publicationDate"
+				<label for="author"
 					class="block text-sm font-medium text-gray-700 mb-2"> <i
-					class="fas fa-calendar mr-2"></i>Publication Date
-				</label> <input type="date" id="publicationDate" name="publicationDate"
-					value="${publicationDate}"
-					class="w-full px-4 py-3 border ${fieldErrors.publicationDate != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
-				<c:if test="${fieldErrors.publicationDate != null}">
-					<p class="mt-1 text-sm text-red-600">${fieldErrors.publicationDate}</p>
+					class="fas fa-user mr-2"></i>Author
+				</label> <input type="text" id="author" name="author"
+					placeholder="Enter author name" value="${author}"
+					class="w-full px-4 py-3 border ${fieldErrors.author != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.author != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.author}</p>
+				</c:if>
+			</div>
+
+			<div>
+				<label for="publisher"
+					class="block text-sm font-medium text-gray-700 mb-2"> <i
+					class="fas fa-building mr-2"></i>Publisher
+				</label> <input type="text" id="publisher" name="publisher"
+					placeholder="Enter publisher name" value="${publisher}"
+					class="w-full px-4 py-3 border ${fieldErrors.publisher != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200">
+				<c:if test="${fieldErrors.publisher != null}">
+					<p class="mt-1 text-sm text-red-600">${fieldErrors.publisher}</p>
 				</c:if>
 			</div>
 

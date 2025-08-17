@@ -87,6 +87,63 @@ public class CustomerService {
 	}
 
 	/**
+	 * Searches customers by name, telephone, or account number
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> searchCustomers(String searchTerm) throws SQLException {
+		return customerDAO.searchCustomers(searchTerm);
+	}
+
+	/**
+	 * Gets paginated customers
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of customers for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> getCustomersPaginated(int offset, int limit) throws SQLException {
+		return customerDAO.getCustomersPaginated(offset, limit);
+	}
+
+	/**
+	 * Searches customers with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching customers for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> searchCustomersPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		return customerDAO.searchCustomersPaginated(searchTerm, offset, limit);
+	}
+
+	/**
+	 * Gets the total count of customers
+	 * 
+	 * @return Total number of customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getCustomerCount() throws SQLException {
+		return customerDAO.getCustomerCount();
+	}
+
+	/**
+	 * Gets the count of customers matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getCustomerSearchCount(String searchTerm) throws SQLException {
+		return customerDAO.getCustomerSearchCount(searchTerm);
+	}
+
+	/**
 	 * Updates a customer
 	 * 
 	 * @param customer The customer to update

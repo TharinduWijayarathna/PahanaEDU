@@ -15,6 +15,8 @@ import javax.servlet.http.HttpSession;
 import edu.pahana.model.User;
 import edu.pahana.service.UserService;
 import edu.pahana.validation.ValidationUtils;
+import edu.pahana.util.PaginationUtil;
+import edu.pahana.util.PaginationUtil.PaginationData;
 
 /**
  * Controller for handling user management operations. Manages listing, adding,
@@ -102,13 +104,39 @@ public class UserManagementController extends HttpServlet {
 	}
 
 	/**
-	 * Lists all users
+	 * Lists all users or searches users based on search parameter with pagination
 	 */
 	private void listUsers(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
-			List<User> users = userService.getAllUsers();
+			// Parse pagination parameters
+			int page = PaginationUtil.parsePageNumber(request.getParameter("page"));
+			int pageSize = PaginationUtil.parsePageSize(request.getParameter("pageSize"));
+			String searchTerm = request.getParameter("search");
+
+			List<User> users;
+			int totalItems;
+
+			if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+				// Search users with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				users = userService.searchUsersPaginated(searchTerm.trim(), offset, pageSize);
+				totalItems = userService.getUserSearchCount(searchTerm.trim());
+			} else {
+				// Get all users with pagination
+				int offset = PaginationUtil.calculateOffset(page, pageSize);
+				users = userService.getUsersPaginated(offset, pageSize);
+				totalItems = userService.getUserCount();
+			}
+
+			// Create pagination data
+			PaginationData paginationData = PaginationUtil.createPaginationData(users, page, pageSize, totalItems);
+
+			// Set attributes for JSP
 			request.setAttribute("users", users);
+			request.setAttribute("pagination", paginationData);
+			request.setAttribute("searchTerm", searchTerm != null ? searchTerm.trim() : "");
+
 			request.getRequestDispatcher("WEB-INF/view/user-management/listUsers.jsp").forward(request, response);
 		} catch (SQLException e) {
 			request.setAttribute("error", "Error loading users: " + e.getMessage());

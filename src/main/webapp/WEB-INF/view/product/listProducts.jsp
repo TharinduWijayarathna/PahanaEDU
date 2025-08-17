@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ include file="../shared/layout.jsp"%>
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -47,12 +48,42 @@
 					placeholder="Search books by title, author, or ISBN..."
 					class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200">
 			</div>
-			<button type="submit"
-				class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
-				<i class="fas fa-search mr-2"></i>Search
-			</button>
+			<div class="flex items-center space-x-2">
+				<select name="pageSize" class="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+					<option value="10" ${param.pageSize == '10' || empty param.pageSize ? 'selected' : ''}>10 per page</option>
+					<option value="25" ${param.pageSize == '25' ? 'selected' : ''}>25 per page</option>
+					<option value="50" ${param.pageSize == '50' ? 'selected' : ''}>50 per page</option>
+					<option value="100" ${param.pageSize == '100' ? 'selected' : ''}>100 per page</option>
+				</select>
+				<button type="submit"
+					class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center">
+					<i class="fas fa-search mr-2"></i>Search
+				</button>
+				<c:if test="${not empty param.search}">
+					<a href="product?action=list"
+						class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center">
+						<i class="fas fa-times mr-2"></i>Clear
+					</a>
+				</c:if>
+			</div>
 		</form>
 	</div>
+
+	<!-- Search Results Info -->
+	<c:if test="${not empty param.search}">
+		<div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+			<div class="flex items-center">
+				<i class="fas fa-search text-blue-500 mr-2"></i>
+				<span class="text-blue-800">
+					Search results for "<strong>${param.search}</strong>" - 
+					<c:choose>
+						<c:when test="${empty products}">No books found</c:when>
+						<c:otherwise>${pagination.totalItems} book(s) found</c:otherwise>
+					</c:choose>
+				</span>
+			</div>
+		</div>
+	</c:if>
 
 	<!-- Products Table -->
 	<div
@@ -73,6 +104,9 @@
 						<th
 							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 							Price</th>
+						<th
+							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							Stock</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 							Actions</th>
@@ -117,6 +151,22 @@
 										currencySymbol="Rs. " />
 								</div>
 							</td>
+							<td class="px-6 py-4 whitespace-nowrap">
+								<div class="text-sm">
+									<c:choose>
+										<c:when test="${product.quantity > 0}">
+											<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+												${product.quantity} in stock
+											</span>
+										</c:when>
+										<c:otherwise>
+											<span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+												Out of stock
+											</span>
+										</c:otherwise>
+									</c:choose>
+								</div>
+							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 								<div class="flex items-center space-x-2">
 									<a href="product?action=view&id=${product.productId}"
@@ -154,4 +204,8 @@
 			</div>
 		</c:if>
 	</div>
+	
+	<!-- Pagination -->
+	<c:set var="paginationUrl" value="product" />
+	<%@ include file="../shared/pagination.jsp" %>
 </div>

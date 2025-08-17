@@ -105,7 +105,7 @@ public class CustomerDAO {
 	 */
 	public List<Customer> getAllCustomers() throws SQLException {
 		List<Customer> customers = new ArrayList<>();
-		String query = "SELECT * FROM Customer";
+		String query = "SELECT * FROM Customer ORDER BY name";
 
 		Connection connection = DBConnectionFactory.getConnection();
 		Statement statement = connection.createStatement();
@@ -124,6 +124,156 @@ public class CustomerDAO {
 		}
 
 		return customers;
+	}
+
+	/**
+	 * Gets paginated customers from the database
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of customers for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> getCustomersPaginated(int offset, int limit) throws SQLException {
+		List<Customer> customers = new ArrayList<>();
+		String query = "SELECT * FROM Customer ORDER BY name LIMIT ? OFFSET ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		statement.setInt(1, limit);
+		statement.setInt(2, offset);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			Customer customer = new Customer();
+			customer.setCustomerId(resultSet.getInt("customer_id"));
+			customer.setAccountNumber(resultSet.getString("account_number"));
+			customer.setName(resultSet.getString("name"));
+			customer.setAddress(resultSet.getString("address"));
+			customer.setTelephone(resultSet.getString("telephone"));
+			customer.setCreatedAt(resultSet.getTimestamp("created_at"));
+			customer.setUpdatedAt(resultSet.getTimestamp("updated_at"));
+			customers.add(customer);
+		}
+
+		return customers;
+	}
+
+	/**
+	 * Gets the total count of customers
+	 * 
+	 * @return Total number of customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getCustomerCount() throws SQLException {
+		String query = "SELECT COUNT(*) FROM Customer";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(query);
+
+		if (resultSet.next()) {
+			return resultSet.getInt(1);
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Searches customers by name or telephone
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> searchCustomers(String searchTerm) throws SQLException {
+		List<Customer> customers = new ArrayList<>();
+		String query = "SELECT * FROM Customer WHERE name LIKE ? OR telephone LIKE ? OR account_number LIKE ? ORDER BY name";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			Customer customer = new Customer();
+			customer.setCustomerId(resultSet.getInt("customer_id"));
+			customer.setAccountNumber(resultSet.getString("account_number"));
+			customer.setName(resultSet.getString("name"));
+			customer.setAddress(resultSet.getString("address"));
+			customer.setTelephone(resultSet.getString("telephone"));
+			customer.setCreatedAt(resultSet.getTimestamp("created_at"));
+			customer.setUpdatedAt(resultSet.getTimestamp("updated_at"));
+			customers.add(customer);
+		}
+
+		return customers;
+	}
+
+	/**
+	 * Searches customers by name or telephone with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching customers for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Customer> searchCustomersPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		List<Customer> customers = new ArrayList<>();
+		String query = "SELECT * FROM Customer WHERE name LIKE ? OR telephone LIKE ? OR account_number LIKE ? ORDER BY name LIMIT ? OFFSET ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		statement.setInt(4, limit);
+		statement.setInt(5, offset);
+		ResultSet resultSet = statement.executeQuery();
+
+		while (resultSet.next()) {
+			Customer customer = new Customer();
+			customer.setCustomerId(resultSet.getInt("customer_id"));
+			customer.setAccountNumber(resultSet.getString("account_number"));
+			customer.setName(resultSet.getString("name"));
+			customer.setAddress(resultSet.getString("address"));
+			customer.setTelephone(resultSet.getString("telephone"));
+			customer.setCreatedAt(resultSet.getTimestamp("created_at"));
+			customer.setUpdatedAt(resultSet.getTimestamp("updated_at"));
+			customers.add(customer);
+		}
+
+		return customers;
+	}
+
+	/**
+	 * Gets the count of customers matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching customers
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getCustomerSearchCount(String searchTerm) throws SQLException {
+		String query = "SELECT COUNT(*) FROM Customer WHERE name LIKE ? OR telephone LIKE ? OR account_number LIKE ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		String searchPattern = "%" + searchTerm + "%";
+		statement.setString(1, searchPattern);
+		statement.setString(2, searchPattern);
+		statement.setString(3, searchPattern);
+		ResultSet resultSet = statement.executeQuery();
+
+		if (resultSet.next()) {
+			return resultSet.getInt(1);
+		}
+
+		return 0;
 	}
 
 	/**

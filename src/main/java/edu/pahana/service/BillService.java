@@ -35,6 +35,13 @@ public class BillService {
 			return false;
 		}
 
+		// Validate bill items including stock availability (only if items exist)
+		if (bill.getItems() != null && !bill.getItems().isEmpty()) {
+			if (!validateBillItems(bill.getItems())) {
+				return false;
+			}
+		}
+
 		// Calculate total amount
 		bill.calculateTotal();
 
@@ -48,7 +55,21 @@ public class BillService {
 			}
 
 			// Create bill items
-			return billItemDAO.createBillItems(bill.getItems());
+			boolean itemsCreated = billItemDAO.createBillItems(bill.getItems());
+
+			if (itemsCreated) {
+				// Update stock quantities after successful bill creation
+				try {
+					for (BillItem item : bill.getItems()) {
+						productDAO.updateStockQuantity(item.getProductId(), item.getQuantity());
+					}
+				} catch (Exception e) {
+					System.err.println("Failed to update stock quantities: " + e.getMessage());
+					// Note: In a production system, you might want to rollback the transaction here
+				}
+			}
+
+			return itemsCreated;
 		}
 
 		return billCreated;
@@ -62,8 +83,71 @@ public class BillService {
 		return billDAO.getBillsByCustomerId(customerId);
 	}
 
+	/**
+	 * Gets all bills
+	 * 
+	 * @return List of all bills
+	 * @throws SQLException if a database error occurs
+	 */
 	public List<Bill> getAllBills() throws SQLException {
 		return billDAO.getAllBills();
+	}
+
+	/**
+	 * Searches bills by customer name, account number, or bill ID
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return List of matching bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> searchBills(String searchTerm) throws SQLException {
+		return billDAO.searchBills(searchTerm);
+	}
+
+	/**
+	 * Gets paginated bills
+	 * 
+	 * @param offset The offset for pagination
+	 * @param limit  The limit for pagination
+	 * @return List of bills for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> getBillsPaginated(int offset, int limit) throws SQLException {
+		return billDAO.getBillsPaginated(offset, limit);
+	}
+
+	/**
+	 * Searches bills with pagination
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @param offset     The offset for pagination
+	 * @param limit      The limit for pagination
+	 * @return List of matching bills for the current page
+	 * @throws SQLException if a database error occurs
+	 */
+	public List<Bill> searchBillsPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		return billDAO.searchBillsPaginated(searchTerm, offset, limit);
+	}
+
+	/**
+	 * Gets the total count of bills
+	 * 
+	 * @return Total number of bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getBillCount() throws SQLException {
+		return billDAO.getBillCount();
+	}
+
+	/**
+	 * Gets the count of bills matching a search term
+	 * 
+	 * @param searchTerm The search term to look for
+	 * @return Count of matching bills
+	 * @throws SQLException if a database error occurs
+	 */
+	public int getBillSearchCount(String searchTerm) throws SQLException {
+		return billDAO.getBillSearchCount(searchTerm);
 	}
 
 	public boolean updateBillStatus(int billId, String status) throws SQLException {
@@ -89,13 +173,16 @@ public class BillService {
 		for (BillItem item : items) {
 			Product product = productDAO.getProductById(item.getProductId());
 			if (product != null) {
-				item.setProductName(product.getName());
-				// Keep the unit price from the form (which may include custom pricing)
-				if (item.getUnitPrice() == null || item.getUnitPrice().compareTo(BigDecimal.ZERO) == 0) {
-					item.setUnitPrice(BigDecimal.valueOf(product.getPrice()));
+				// Check stock availability
+				if (product.getQuantity() >= item.getQuantity()) {
+					item.setProductName(product.getName());
+					// Keep the unit price from the form (which may include custom pricing)
+					if (item.getUnitPrice() == null || item.getUnitPrice().compareTo(BigDecimal.ZERO) == 0) {
+						item.setUnitPrice(BigDecimal.valueOf(product.getPrice()));
+					}
+					item.calculateSubtotal();
+					validItems.add(item);
 				}
-				item.calculateSubtotal();
-				validItems.add(item);
 			}
 		}
 
@@ -129,6 +216,7 @@ public class BillService {
 	}
 
 	public boolean validateBillItems(List<BillItem> items) throws SQLException {
+		// Empty lists are invalid for validation (must have at least one item)
 		if (items == null || items.isEmpty()) {
 			return false;
 		}
@@ -140,6 +228,11 @@ public class BillService {
 			}
 
 			if (item.getQuantity() <= 0) {
+				return false;
+			}
+
+			// Check stock availability
+			if (product.getQuantity() < item.getQuantity()) {
 				return false;
 			}
 		}

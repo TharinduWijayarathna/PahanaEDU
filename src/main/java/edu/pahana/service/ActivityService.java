@@ -119,6 +119,34 @@ public class ActivityService {
 	}
 
 	/**
+	 * Get activities with pagination
+	 */
+	public List<Activity> getActivitiesPaginated(int offset, int limit) throws SQLException {
+		return activityDAO.getActivitiesPaginated(offset, limit);
+	}
+
+	/**
+	 * Get total count of activities
+	 */
+	public int getActivityCount() throws SQLException {
+		return activityDAO.getActivityCount();
+	}
+
+	/**
+	 * Search activities with pagination
+	 */
+	public List<Activity> searchActivitiesPaginated(String searchTerm, int offset, int limit) throws SQLException {
+		return activityDAO.searchActivitiesPaginated(searchTerm, offset, limit);
+	}
+
+	/**
+	 * Get count of activities matching search term
+	 */
+	public int getActivitySearchCount(String searchTerm) throws SQLException {
+		return activityDAO.getActivitySearchCount(searchTerm);
+	}
+
+	/**
 	 * Get recent activities with limit
 	 */
 	public List<Activity> getRecentActivities(int limit) throws SQLException {
@@ -192,7 +220,7 @@ public class ActivityService {
 		java.util.Map<String, Object> stats = new java.util.HashMap<>();
 
 		// Get counts for different activity types
-		stats.put("totalActivities", activityDAO.getAllActivities().size());
+		stats.put("totalActivities", activityDAO.getActivityCount());
 		stats.put("billActivities", getActivityCountByType(Activity.TYPE_BILL_CREATED));
 		stats.put("customerActivities", getActivityCountByType(Activity.TYPE_CUSTOMER_ADDED));
 		stats.put("productActivities", getActivityCountByType(Activity.TYPE_PRODUCT_ADDED));
