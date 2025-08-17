@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ include file="../shared/layout.jsp"%>
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -107,10 +108,8 @@
 									<a href="bill?action=view&id=${bill.billId}"
 										class="text-orange-600 hover:text-orange-900 transition-colors duration-200">
 										<i class="fas fa-eye"></i>
-									</a> <a href="bill?action=print&id=${bill.billId}"
-										class="text-green-600 hover:text-green-900 transition-colors duration-200">
-										<i class="fas fa-print"></i>
-									</a> <a href="bill?action=delete&id=${bill.billId}"
+									</a>
+									<a href="bill?action=delete&id=${bill.billId}"
 										onclick="return confirm('Are you sure you want to delete this bill?')"
 										class="text-red-600 hover:text-red-900 transition-colors duration-200">
 										<i class="fas fa-trash"></i>
