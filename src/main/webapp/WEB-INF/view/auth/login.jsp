@@ -64,14 +64,15 @@
 				</div>
 			</div>
 		</c:if>
-		
+
 		<!-- Validation Error Messages -->
 		<c:if test="${not empty validationErrors}">
 			<div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
 				<div class="flex items-start">
 					<i class="fas fa-exclamation-triangle text-red-500 mr-2 mt-1"></i>
 					<div class="flex-1">
-						<h3 class="text-red-800 font-medium mb-2">Please correct the following errors:</h3>
+						<h3 class="text-red-800 font-medium mb-2">Please correct the
+							following errors:</h3>
 						<ul class="list-disc list-inside text-red-700 space-y-1">
 							<c:forEach var="error" items="${validationErrors}">
 								<li>${error}</li>
@@ -81,14 +82,16 @@
 				</div>
 			</div>
 		</c:if>
-		
+
 		<!-- Field-specific validation errors -->
 		<c:if test="${not empty fieldErrors}">
-			<div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+			<div
+				class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
 				<div class="flex items-start">
 					<i class="fas fa-exclamation-triangle text-yellow-500 mr-2 mt-1"></i>
 					<div class="flex-1">
-						<h3 class="text-yellow-800 font-medium mb-2">Please check the following fields:</h3>
+						<h3 class="text-yellow-800 font-medium mb-2">Please check the
+							following fields:</h3>
 						<ul class="list-disc list-inside text-yellow-700 space-y-1">
 							<c:forEach var="fieldError" items="${fieldErrors}">
 								<li><strong>${fieldError.key}:</strong> ${fieldError.value}</li>

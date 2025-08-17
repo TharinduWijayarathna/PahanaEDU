@@ -19,277 +19,289 @@ import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
 
 /**
- * Controller for handling customer-related requests.
- * Manages customer listing, creation, editing, and deletion.
+ * Controller for handling customer-related requests. Manages customer listing,
+ * creation, editing, and deletion.
  */
 @WebServlet("/customer")
 public class CustomerController extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    
-    private CustomerService customerService;
-    private ActivityService activityService;
-    
-    /**
-     * Initializes the controller
-     */
-    public void init() throws ServletException {
-        customerService = CustomerService.getInstance();
-        activityService = new ActivityService();
-        
-        // Initialize activity system
-        try {
-            activityService.initialize();
-        } catch (Exception e) {
-            // Log error but don't fail initialization
-            System.err.println("Failed to initialize activity system: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Handles GET requests for customer management
-     */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Check if user is logged in
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect("auth?action=login");
-            return;
-        }
-        
-        String action = request.getParameter("action");
-        if (action == null || action.equals("list")) {
-            listCustomers(request, response);
-        } else if (action.equals("add")) {
-            showAddForm(request, response);
-        } else if (action.equals("edit")) {
-            showEditForm(request, response);
-        } else if (action.equals("delete")) {
-            deleteCustomer(request, response);
-        } else if (action.equals("view")) {
-            viewCustomer(request, response);
-        }
-    }
-    
-    /**
-     * Handles POST requests for customer management
-     */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Check if user is logged in
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect("auth?action=login");
-            return;
-        }
-        
-        String action = request.getParameter("action");
-        if (action.equals("add")) {
-            addCustomer(request, response);
-        } else if (action.equals("update")) {
-            updateCustomer(request, response);
-        }
-    }
-    
-    /**
-     * Lists all customers
-     */
-    private void listCustomers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<Customer> customerList = new ArrayList<>();
-        try {
-            customerList = customerService.getAllCustomers();
-            request.setAttribute("customers", customerList);
-        } catch (SQLException e) {
-            request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
-            return;
-        }
-        
-        request.getRequestDispatcher("WEB-INF/view/customer/listCustomers.jsp").forward(request, response);
-    }
-    
-    /**
-     * Shows the form for adding a new customer
-     */
-    private void showAddForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            // Generate a new account number
-            String accountNumber = customerService.generateAccountNumber();
-            request.setAttribute("accountNumber", accountNumber);
-        } catch (SQLException e) {
-            request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
-            return;
-        }
-        
-        request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
-    }
-    
-    /**
-     * Processes the addition of a new customer
-     */
-    private void addCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String accountNumber = request.getParameter("accountNumber");
-        String name = request.getParameter("name");
-        String address = request.getParameter("address");
-        String telephone = request.getParameter("telephone");
-        
-        // Sanitize inputs
-        accountNumber = ValidationUtils.sanitizeString(accountNumber);
-        name = ValidationUtils.sanitizeString(name);
-        address = ValidationUtils.sanitizeString(address);
-        telephone = ValidationUtils.sanitizeString(telephone);
-        
-        // Validate input
-        Map<String, String> validationErrors = ValidationUtils.validateCustomer(accountNumber, name, address, telephone);
-        
-        if (!validationErrors.isEmpty()) {
-            // Validation failed - show errors
-            request.setAttribute("fieldErrors", validationErrors);
-            request.setAttribute("accountNumber", accountNumber);
-            request.setAttribute("name", name);
-            request.setAttribute("address", address);
-            request.setAttribute("telephone", telephone);
-            request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
-            return;
-        }
-        
-        Customer customer = new Customer(accountNumber, name, address, telephone);
-        
-        try {
-            boolean success = customerService.addCustomer(customer);
-            
-            if (success) {
-                // Log customer addition activity
-                try {
-                    HttpSession session = request.getSession(false);
-                    String username = session != null ? (String) session.getAttribute("username") : "system";
-                    activityService.logCustomerAdded(customer.getCustomerId(), customer.getName(), username);
-                } catch (Exception e) {
-                    // Log error but don't fail customer addition
-                    System.err.println("Failed to log customer addition activity: " + e.getMessage());
-                }
-                
-                // Customer added successfully
-                response.sendRedirect("customer?action=list");
-            } else {
-                // Customer addition failed (likely account number already exists)
-                request.setAttribute("error", "Account number already exists");
-                request.setAttribute("accountNumber", accountNumber);
-                request.setAttribute("name", name);
-                request.setAttribute("address", address);
-                request.setAttribute("telephone", telephone);
-                request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
-            }
-        } catch (SQLException e) {
-            request.setAttribute("error", "Database error: " + e.getMessage());
-            request.setAttribute("accountNumber", accountNumber);
-            request.setAttribute("name", name);
-            request.setAttribute("address", address);
-            request.setAttribute("telephone", telephone);
-            request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
-        }
-    }
-    
-    /**
-     * Shows the form for editing a customer
-     */
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("id"));
-        try {
-            Customer customer = customerService.getCustomerById(customerId);
-            request.setAttribute("customer", customer);
-            request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
-        } catch (SQLException e) {
-            request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
-        }
-    }
-    
-    /**
-     * Processes the update of a customer
-     */
-    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("id"));
-        String accountNumber = request.getParameter("accountNumber");
-        String name = request.getParameter("name");
-        String address = request.getParameter("address");
-        String telephone = request.getParameter("telephone");
-        
-        // Sanitize inputs
-        accountNumber = ValidationUtils.sanitizeString(accountNumber);
-        name = ValidationUtils.sanitizeString(name);
-        address = ValidationUtils.sanitizeString(address);
-        telephone = ValidationUtils.sanitizeString(telephone);
-        
-        // Validate input
-        Map<String, String> validationErrors = ValidationUtils.validateCustomer(accountNumber, name, address, telephone);
-        
-        if (!validationErrors.isEmpty()) {
-            // Validation failed - show errors
-            request.setAttribute("fieldErrors", validationErrors);
-            request.setAttribute("customerId", customerId);
-            request.setAttribute("accountNumber", accountNumber);
-            request.setAttribute("name", name);
-            request.setAttribute("address", address);
-            request.setAttribute("telephone", telephone);
-            request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
-            return;
-        }
-        
-        Customer customer = new Customer(customerId, accountNumber, name, address, telephone);
-        
-        try {
-            boolean success = customerService.updateCustomer(customer);
-            
-            if (success) {
-                // Customer updated successfully
-                response.sendRedirect("customer?action=list");
-            } else {
-                // Customer update failed (likely account number already exists for another customer)
-                request.setAttribute("error", "Account number already exists for another customer");
-                request.setAttribute("customerId", customerId);
-                request.setAttribute("accountNumber", accountNumber);
-                request.setAttribute("name", name);
-                request.setAttribute("address", address);
-                request.setAttribute("telephone", telephone);
-                request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
-            }
-        } catch (SQLException e) {
-            request.setAttribute("error", "Database error: " + e.getMessage());
-            request.setAttribute("customerId", customerId);
-            request.setAttribute("accountNumber", accountNumber);
-            request.setAttribute("name", name);
-            request.setAttribute("address", address);
-            request.setAttribute("telephone", telephone);
-            request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
-        }
-    }
-    
-    /**
-     * Processes the deletion of a customer
-     */
-    private void deleteCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("id"));
-        try {
-            customerService.deleteCustomer(customerId);
-            response.sendRedirect("customer?action=list");
-        } catch (SQLException e) {
-            request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
-        }
-    }
-    
-    /**
-     * Shows the details of a customer
-     */
-    private void viewCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("id"));
-        try {
-            Customer customer = customerService.getCustomerById(customerId);
-            request.setAttribute("customer", customer);
-            request.getRequestDispatcher("WEB-INF/view/customer/viewCustomer.jsp").forward(request, response);
-        } catch (SQLException e) {
-            request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
-        }
-    }
+	private static final long serialVersionUID = 1L;
+
+	private CustomerService customerService;
+	private ActivityService activityService;
+
+	/**
+	 * Initializes the controller
+	 */
+	public void init() throws ServletException {
+		customerService = CustomerService.getInstance();
+		activityService = new ActivityService();
+
+		// Initialize activity system
+		try {
+			activityService.initialize();
+		} catch (Exception e) {
+			// Log error but don't fail initialization
+			System.err.println("Failed to initialize activity system: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Handles GET requests for customer management
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		// Check if user is logged in
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("user") == null) {
+			response.sendRedirect("auth?action=login");
+			return;
+		}
+
+		String action = request.getParameter("action");
+		if (action == null || action.equals("list")) {
+			listCustomers(request, response);
+		} else if (action.equals("add")) {
+			showAddForm(request, response);
+		} else if (action.equals("edit")) {
+			showEditForm(request, response);
+		} else if (action.equals("delete")) {
+			deleteCustomer(request, response);
+		} else if (action.equals("view")) {
+			viewCustomer(request, response);
+		}
+	}
+
+	/**
+	 * Handles POST requests for customer management
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		// Check if user is logged in
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("user") == null) {
+			response.sendRedirect("auth?action=login");
+			return;
+		}
+
+		String action = request.getParameter("action");
+		if (action.equals("add")) {
+			addCustomer(request, response);
+		} else if (action.equals("update")) {
+			updateCustomer(request, response);
+		}
+	}
+
+	/**
+	 * Lists all customers
+	 */
+	private void listCustomers(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		List<Customer> customerList = new ArrayList<>();
+		try {
+			customerList = customerService.getAllCustomers();
+			request.setAttribute("customers", customerList);
+		} catch (SQLException e) {
+			request.setAttribute("errorMessage", e.getMessage());
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
+		request.getRequestDispatcher("WEB-INF/view/customer/listCustomers.jsp").forward(request, response);
+	}
+
+	/**
+	 * Shows the form for adding a new customer
+	 */
+	private void showAddForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			// Generate a new account number
+			String accountNumber = customerService.generateAccountNumber();
+			request.setAttribute("accountNumber", accountNumber);
+		} catch (SQLException e) {
+			request.setAttribute("errorMessage", e.getMessage());
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+			return;
+		}
+
+		request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+	}
+
+	/**
+	 * Processes the addition of a new customer
+	 */
+	private void addCustomer(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String accountNumber = request.getParameter("accountNumber");
+		String name = request.getParameter("name");
+		String address = request.getParameter("address");
+		String telephone = request.getParameter("telephone");
+
+		// Sanitize inputs
+		accountNumber = ValidationUtils.sanitizeString(accountNumber);
+		name = ValidationUtils.sanitizeString(name);
+		address = ValidationUtils.sanitizeString(address);
+		telephone = ValidationUtils.sanitizeString(telephone);
+
+		// Validate input
+		Map<String, String> validationErrors = ValidationUtils.validateCustomer(accountNumber, name, address,
+				telephone);
+
+		if (!validationErrors.isEmpty()) {
+			// Validation failed - show errors
+			request.setAttribute("fieldErrors", validationErrors);
+			request.setAttribute("accountNumber", accountNumber);
+			request.setAttribute("name", name);
+			request.setAttribute("address", address);
+			request.setAttribute("telephone", telephone);
+			request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+			return;
+		}
+
+		Customer customer = new Customer(accountNumber, name, address, telephone);
+
+		try {
+			boolean success = customerService.addCustomer(customer);
+
+			if (success) {
+				// Log customer addition activity
+				try {
+					HttpSession session = request.getSession(false);
+					String username = session != null ? (String) session.getAttribute("username") : "system";
+					activityService.logCustomerAdded(customer.getCustomerId(), customer.getName(), username);
+				} catch (Exception e) {
+					// Log error but don't fail customer addition
+					System.err.println("Failed to log customer addition activity: " + e.getMessage());
+				}
+
+				// Customer added successfully
+				response.sendRedirect("customer?action=list");
+			} else {
+				// Customer addition failed (likely account number already exists)
+				request.setAttribute("error", "Account number already exists");
+				request.setAttribute("accountNumber", accountNumber);
+				request.setAttribute("name", name);
+				request.setAttribute("address", address);
+				request.setAttribute("telephone", telephone);
+				request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+			}
+		} catch (SQLException e) {
+			request.setAttribute("error", "Database error: " + e.getMessage());
+			request.setAttribute("accountNumber", accountNumber);
+			request.setAttribute("name", name);
+			request.setAttribute("address", address);
+			request.setAttribute("telephone", telephone);
+			request.getRequestDispatcher("WEB-INF/view/customer/addCustomer.jsp").forward(request, response);
+		}
+	}
+
+	/**
+	 * Shows the form for editing a customer
+	 */
+	private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		int customerId = Integer.parseInt(request.getParameter("id"));
+		try {
+			Customer customer = customerService.getCustomerById(customerId);
+			request.setAttribute("customer", customer);
+			request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+		} catch (SQLException e) {
+			request.setAttribute("errorMessage", e.getMessage());
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+		}
+	}
+
+	/**
+	 * Processes the update of a customer
+	 */
+	private void updateCustomer(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		int customerId = Integer.parseInt(request.getParameter("id"));
+		String accountNumber = request.getParameter("accountNumber");
+		String name = request.getParameter("name");
+		String address = request.getParameter("address");
+		String telephone = request.getParameter("telephone");
+
+		// Sanitize inputs
+		accountNumber = ValidationUtils.sanitizeString(accountNumber);
+		name = ValidationUtils.sanitizeString(name);
+		address = ValidationUtils.sanitizeString(address);
+		telephone = ValidationUtils.sanitizeString(telephone);
+
+		// Validate input
+		Map<String, String> validationErrors = ValidationUtils.validateCustomer(accountNumber, name, address,
+				telephone);
+
+		if (!validationErrors.isEmpty()) {
+			// Validation failed - show errors
+			request.setAttribute("fieldErrors", validationErrors);
+			request.setAttribute("customerId", customerId);
+			request.setAttribute("accountNumber", accountNumber);
+			request.setAttribute("name", name);
+			request.setAttribute("address", address);
+			request.setAttribute("telephone", telephone);
+			request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+			return;
+		}
+
+		Customer customer = new Customer(customerId, accountNumber, name, address, telephone);
+
+		try {
+			boolean success = customerService.updateCustomer(customer);
+
+			if (success) {
+				// Customer updated successfully
+				response.sendRedirect("customer?action=list");
+			} else {
+				// Customer update failed (likely account number already exists for another
+				// customer)
+				request.setAttribute("error", "Account number already exists for another customer");
+				request.setAttribute("customerId", customerId);
+				request.setAttribute("accountNumber", accountNumber);
+				request.setAttribute("name", name);
+				request.setAttribute("address", address);
+				request.setAttribute("telephone", telephone);
+				request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+			}
+		} catch (SQLException e) {
+			request.setAttribute("error", "Database error: " + e.getMessage());
+			request.setAttribute("customerId", customerId);
+			request.setAttribute("accountNumber", accountNumber);
+			request.setAttribute("name", name);
+			request.setAttribute("address", address);
+			request.setAttribute("telephone", telephone);
+			request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
+		}
+	}
+
+	/**
+	 * Processes the deletion of a customer
+	 */
+	private void deleteCustomer(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		int customerId = Integer.parseInt(request.getParameter("id"));
+		try {
+			customerService.deleteCustomer(customerId);
+			response.sendRedirect("customer?action=list");
+		} catch (SQLException e) {
+			request.setAttribute("errorMessage", e.getMessage());
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+		}
+	}
+
+	/**
+	 * Shows the details of a customer
+	 */
+	private void viewCustomer(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		int customerId = Integer.parseInt(request.getParameter("id"));
+		try {
+			Customer customer = customerService.getCustomerById(customerId);
+			request.setAttribute("customer", customer);
+			request.getRequestDispatcher("WEB-INF/view/customer/viewCustomer.jsp").forward(request, response);
+		} catch (SQLException e) {
+			request.setAttribute("errorMessage", e.getMessage());
+			request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
+		}
+	}
 }
