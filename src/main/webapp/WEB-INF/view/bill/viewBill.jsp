@@ -202,13 +202,155 @@
 
 		<!-- Action Buttons -->
 		<div class="flex items-center gap-4 mt-8 justify-center">
-			<a href="bill?action=print&id=${bill.billId}"
+			<button onclick="printBill()"
 				class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center">
 				<i class="fas fa-print mr-2"></i>Print Bill
-			</a> <a href="bill?action=list"
+			</button> <a href="bill?action=list"
 				class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center">
 				<i class="fas fa-arrow-left mr-2"></i>Back
 			</a>
 		</div>
+	</div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+	body * {
+		visibility: hidden;
+	}
+	.print-content, .print-content * {
+		visibility: visible;
+	}
+	.print-content {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+	}
+	.navbar, .sidebar, .print-btn, .back-btn {
+		display: none !important;
+	}
+}
+</style>
+
+<!-- Print Content Template -->
+<div id="printContent" class="print-content" style="display: none;">
+	<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+		<!-- Header -->
+		<div style="text-align: center; margin-bottom: 30px; padding: 20px; border-bottom: 3px solid #ea580c; background: #fff7ed;">
+			<div style="font-size: 32px; font-weight: bold; color: #ea580c; margin-bottom: 8px;">Pahana Edu Bookshop</div>
+			<div style="font-size: 16px; color: #c2410c; margin-bottom: 12px; font-style: italic;">Your Trusted Source for Quality Books</div>
+			<div style="font-size: 13px; color: #7c2d12; line-height: 1.8;">
+				<strong>Address:</strong> Colombo City, Sri Lanka<br>
+				<strong>Phone:</strong> +94 11 2345678 | <strong>Email:</strong> info@pahanaedu.com<br>
+				<strong>Website:</strong> www.pahanaedu.com
+			</div>
+		</div>
+
+		<!-- Bill Header -->
+		<div style="display: flex; justify-content: space-between; margin-bottom: 30px; padding: 25px; background: #fff7ed; border-radius: 8px; border: 1px solid #fdba74;">
+			<div style="flex: 1;">
+				<h3 style="color: #ea580c; margin-bottom: 18px; font-size: 20px; border-bottom: 2px solid #fdba74; padding-bottom: 8px;">Bill To:</h3>
+				<p style="margin-bottom: 8px; font-size: 14px; color: #7c2d12;"><strong>Name:</strong> ${bill.customerName}</p>
+				<p style="margin-bottom: 8px; font-size: 14px; color: #7c2d12;"><strong>Account Number:</strong> ${bill.accountNumber}</p>
+				<p style="margin-bottom: 8px; font-size: 14px; color: #7c2d12;"><strong>Date:</strong> ${bill.billDate}</p>
+			</div>
+			<div style="flex: 1;">
+				<h3 style="color: #ea580c; margin-bottom: 18px; font-size: 20px; border-bottom: 2px solid #fdba74; padding-bottom: 8px;">Bill Information:</h3>
+				<div style="font-size: 18px; font-weight: bold; color: #ea580c; margin-bottom: 5px;">Bill #${bill.billId}</div>
+				<div style="color: #7c2d12; font-size: 14px;">Generated: ${bill.billDate}</div>
+				<p style="margin-bottom: 8px; font-size: 14px; color: #7c2d12;"><strong>Status:</strong> 
+					<c:choose>
+						<c:when test="${bill.status == 'paid'}">
+							<span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">${bill.status}</span>
+						</c:when>
+						<c:when test="${bill.status == 'cancelled'}">
+							<span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">${bill.status}</span>
+						</c:when>
+						<c:otherwise>
+							<span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;">${bill.status}</span>
+						</c:otherwise>
+					</c:choose>
+				</p>
+			</div>
+		</div>
+
+		<!-- Items Table -->
+		<table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+			<thead>
+				<tr style="background: #ea580c; color: white;">
+					<th style="padding: 15px; text-align: left; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">#</th>
+					<th style="padding: 15px; text-align: left; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Product</th>
+					<th style="padding: 15px; text-align: left; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Quantity</th>
+					<th style="padding: 15px; text-align: left; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Unit Price</th>
+					<th style="padding: 15px; text-align: left; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Subtotal</th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="item" items="${bill.items}" varStatus="status">
+					<tr style="background: <c:choose><c:when test="${status.index % 2 == 0}">white</c:when><c:otherwise>#fff7ed</c:otherwise></c:choose>;">
+						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong>${status.index + 1}</strong></td>
+						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong>${item.productName}</strong></td>
+						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;">${item.quantity}</td>
+						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><fmt:formatNumber value="${item.unitPrice}" type="currency" currencySymbol="Rs. " /></td>
+						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong><fmt:formatNumber value="${item.subtotal}" type="currency" currencySymbol="Rs. " /></strong></td>
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>
+
+		<!-- Bill Summary -->
+		<div style="margin: 30px 0; padding: 25px; background: #fff7ed; border-radius: 8px; border: 1px solid #fdba74;">
+			<h3 style="color: #ea580c; margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #fdba74; padding-bottom: 8px;">Bill Summary</h3>
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+				<span style="color: #7c2d12; font-size: 14px;">Subtotal:</span>
+				<span style="color: #7c2d12; font-size: 14px; font-weight: bold;">
+					<fmt:formatNumber value="${bill.totalAmount + (bill.discount > 0 ? bill.totalAmount * bill.discount / 100 : 0)}" type="currency" currencySymbol="Rs. " />
+				</span>
+			</div>
+			<c:if test="${bill.discount > 0}">
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+					<span style="color: #7c2d12; font-size: 14px;">Discount (${bill.discount}%):</span>
+					<span style="color: #059669; font-size: 14px; font-weight: bold;">
+						- <fmt:formatNumber value="${bill.totalAmount * bill.discount / 100}" type="currency" currencySymbol="Rs. " />
+					</span>
+				</div>
+			</c:if>
+			<hr style="margin: 15px 0; border: none; border-top: 1px solid #fdba74;">
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<span style="color: #ea580c; font-size: 18px; font-weight: bold;">Total Amount:</span>
+				<span style="color: #ea580c; font-size: 24px; font-weight: bold;">
+					<fmt:formatNumber value="${bill.totalAmount}" type="currency" currencySymbol="Rs. " />
+				</span>
+			</div>
+		</div>
+
+		<!-- Footer -->
+		<div style="margin-top: 50px; padding: 25px; border-top: 2px solid #fdba74; text-align: center; font-size: 13px; color: #7c2d12; background: #fff7ed; border-radius: 8px;">
+			<p><strong>Thank you for your business!</strong></p>
+			<p>For any queries, please contact us at info@pahanaedu.com or call +94 11 2345678</p>
+			<p>This is a computer generated bill. No signature required.</p>
+			<p style="margin-top: 15px; font-size: 11px; color: #9a3412;">
+				<strong>Pahana Edu Bookshop</strong> - Empowering Education Through Quality Books
+			</p>
+		</div>
+	</div>
+</div>
+
+<script>
+function printBill() {
+	// Show the print content
+	document.getElementById('printContent').style.display = 'block';
+	
+	// Trigger print
+	window.print();
+	
+	// Hide the print content after printing
+	setTimeout(function() {
+		document.getElementById('printContent').style.display = 'none';
+	}, 1000);
+}
+</script>
 	</div>
 </div>
