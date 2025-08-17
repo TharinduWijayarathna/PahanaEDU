@@ -26,8 +26,8 @@ public class Product {
 	/**
 	 * Constructor with all fields
 	 */
-	public Product(int productId, String name, String description, double price, int quantity, String isbn, String author,
-			String publisher, Date publicationDate) {
+	public Product(int productId, String name, String description, double price, int quantity, String isbn,
+			String author, String publisher, Date publicationDate) {
 		this.productId = productId;
 		this.name = name;
 		this.description = description;
@@ -132,7 +132,7 @@ public class Product {
 	@Override
 	public String toString() {
 		return "Product{" + "productId=" + productId + ", name='" + name + '\'' + ", description='" + description + '\''
-				+ ", price=" + price + ", quantity=" + quantity + ", isbn='" + isbn + '\'' + ", author='" + author + '\'' + ", publisher='"
-				+ publisher + '\'' + ", publicationDate=" + publicationDate + '}';
+				+ ", price=" + price + ", quantity=" + quantity + ", isbn='" + isbn + '\'' + ", author='" + author
+				+ '\'' + ", publisher='" + publisher + '\'' + ", publicationDate=" + publicationDate + '}';
 	}
 }

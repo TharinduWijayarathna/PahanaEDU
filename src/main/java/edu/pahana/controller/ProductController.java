@@ -130,8 +130,8 @@ public class ProductController extends HttpServlet {
 		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr, isbn,
-				author, publisher);
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr,
+				isbn, author, publisher);
 
 		if (!validationErrors.isEmpty()) {
 			// Validation failed - show errors
@@ -223,13 +223,13 @@ public class ProductController extends HttpServlet {
 		try {
 			int productId = Integer.parseInt(productIdStr);
 			Product product = productService.getProductById(productId);
-			
+
 			if (product == null) {
 				request.setAttribute("errorMessage", "Product not found");
 				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 				return;
 			}
-			
+
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/viewProduct.jsp").forward(request, response);
 		} catch (NumberFormatException e) {
@@ -253,20 +253,20 @@ public class ProductController extends HttpServlet {
 		try {
 			int productId = Integer.parseInt(productIdStr);
 			Product product = productService.getProductById(productId);
-			
+
 			if (product == null) {
 				request.setAttribute("errorMessage", "Product not found");
 				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 				return;
 			}
-			
+
 			// Format the publication date for the HTML date input
 			if (product.getPublicationDate() != null) {
 				java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
 				String formattedDate = dateFormat.format(product.getPublicationDate());
 				request.setAttribute("formattedPublicationDate", formattedDate);
 			}
-			
+
 			request.setAttribute("product", product);
 			request.getRequestDispatcher("WEB-INF/view/product/editProduct.jsp").forward(request, response);
 		} catch (NumberFormatException e) {
@@ -313,8 +313,8 @@ public class ProductController extends HttpServlet {
 		publicationDateStr = ValidationUtils.sanitizeString(publicationDateStr);
 
 		// Validate input
-		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr, isbn,
-				author, publisher);
+		Map<String, String> validationErrors = ValidationUtils.validateProduct(name, description, priceStr, quantityStr,
+				isbn, author, publisher);
 
 		if (!validationErrors.isEmpty()) {
 			// Validation failed - show errors
@@ -358,7 +358,8 @@ public class ProductController extends HttpServlet {
 			}
 		}
 
-		Product product = new Product(productId, name, description, price, quantity, isbn, author, publisher, publicationDate);
+		Product product = new Product(productId, name, description, price, quantity, isbn, author, publisher,
+				publicationDate);
 
 		try {
 			productService.updateProduct(product);

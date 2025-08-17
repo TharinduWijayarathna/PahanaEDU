@@ -228,9 +228,8 @@ public class BillController extends HttpServlet {
 							if (product != null) {
 								// Check stock availability
 								if (product.getQuantity() < quantity) {
-									validationErrors.put("stock_" + i, 
-										"Insufficient stock for " + product.getName() + 
-										". Available: " + product.getQuantity() + ", Requested: " + quantity);
+									validationErrors.put("stock_" + i, "Insufficient stock for " + product.getName()
+											+ ". Available: " + product.getQuantity() + ", Requested: " + quantity);
 								} else {
 									BillItem item = new BillItem(productId, product.getName(), quantity,
 											BigDecimal.valueOf(unitPrice));

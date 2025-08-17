@@ -217,13 +217,13 @@ public class CustomerController extends HttpServlet {
 		try {
 			int customerId = Integer.parseInt(customerIdStr);
 			Customer customer = customerService.getCustomerById(customerId);
-			
+
 			if (customer == null) {
 				request.setAttribute("errorMessage", "Customer not found");
 				request.getRequestDispatcher("WEB-INF/view/error.jsp").forward(request, response);
 				return;
 			}
-			
+
 			request.setAttribute("customer", customer);
 			request.getRequestDispatcher("WEB-INF/view/customer/editCustomer.jsp").forward(request, response);
 		} catch (NumberFormatException e) {

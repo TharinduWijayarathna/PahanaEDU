@@ -7,8 +7,8 @@ import java.util.Map;
 import org.junit.Test;
 
 /**
- * Test class for ValidationUtils
- * Tests all validation methods including the new quantity validation
+ * Test class for ValidationUtils Tests all validation methods including the new
+ * quantity validation
  */
 public class ValidationUtilsTest {
 
@@ -24,7 +24,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have no validation errors", errors.isEmpty());
@@ -42,7 +43,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have name error", errors.containsKey("name"));
@@ -61,7 +63,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have price error", errors.containsKey("price"));
@@ -80,7 +83,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -99,7 +103,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have price error", errors.containsKey("price"));
@@ -118,7 +123,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have price error", errors.containsKey("price"));
@@ -137,7 +143,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -156,7 +163,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -175,7 +183,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have no validation errors for zero quantity", errors.isEmpty());
@@ -193,7 +202,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have quantity error", errors.containsKey("quantity"));
@@ -212,7 +222,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have ISBN error", errors.containsKey("isbn"));
@@ -231,7 +242,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have no validation errors for valid ISBN", errors.isEmpty());
@@ -249,7 +261,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have no validation errors for empty ISBN", errors.isEmpty());
@@ -267,7 +280,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertEquals("Should have 4 validation errors", 4, errors.size());
@@ -289,7 +303,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have description error", errors.containsKey("description"));
@@ -308,7 +323,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have name error", errors.containsKey("name"));
@@ -327,7 +343,8 @@ public class ValidationUtilsTest {
 		String publisher = "Test Publisher";
 
 		// Act
-		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author, publisher);
+		Map<String, String> errors = ValidationUtils.validateProduct(name, description, price, quantity, isbn, author,
+				publisher);
 
 		// Assert
 		assertTrue("Should have name error", errors.containsKey("name"));

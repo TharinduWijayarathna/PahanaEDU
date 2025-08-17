@@ -849,12 +849,12 @@ public class BillServiceTest {
 	public void testValidateBillItems_MultipleItemsWithStock() throws SQLException {
 		// Arrange
 		List<BillItem> items = new ArrayList<>();
-		
+
 		BillItem item1 = new BillItem();
 		item1.setProductId(1);
 		item1.setQuantity(5);
 		items.add(item1);
-		
+
 		BillItem item2 = new BillItem();
 		item2.setProductId(2);
 		item2.setQuantity(3);
@@ -863,11 +863,11 @@ public class BillServiceTest {
 		Product product1 = new Product();
 		product1.setProductId(1);
 		product1.setQuantity(10);
-		
+
 		Product product2 = new Product();
 		product2.setProductId(2);
 		product2.setQuantity(5);
-		
+
 		when(productDAO.getProductById(1)).thenReturn(product1);
 		when(productDAO.getProductById(2)).thenReturn(product2);
 
@@ -884,12 +884,12 @@ public class BillServiceTest {
 	public void testValidateBillItems_MultipleItemsInsufficientStock() throws SQLException {
 		// Arrange
 		List<BillItem> items = new ArrayList<>();
-		
+
 		BillItem item1 = new BillItem();
 		item1.setProductId(1);
 		item1.setQuantity(5);
 		items.add(item1);
-		
+
 		BillItem item2 = new BillItem();
 		item2.setProductId(2);
 		item2.setQuantity(10); // More than available
@@ -898,11 +898,11 @@ public class BillServiceTest {
 		Product product1 = new Product();
 		product1.setProductId(1);
 		product1.setQuantity(10);
-		
+
 		Product product2 = new Product();
 		product2.setProductId(2);
 		product2.setQuantity(5); // Only 5 available
-		
+
 		when(productDAO.getProductById(1)).thenReturn(product1);
 		when(productDAO.getProductById(2)).thenReturn(product2);
 
@@ -940,7 +940,7 @@ public class BillServiceTest {
 	public void testCreateBillWithStockValidation_InsufficientStock() throws SQLException {
 		// Arrange
 		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
-		
+
 		Product lowStockProduct = new Product();
 		lowStockProduct.setProductId(1);
 		lowStockProduct.setQuantity(1); // Only 1 available
@@ -950,7 +950,7 @@ public class BillServiceTest {
 		BillItem highQuantityItem = new BillItem();
 		highQuantityItem.setProductId(1);
 		highQuantityItem.setQuantity(5); // Request 5, but only 1 available
-		
+
 		List<BillItem> items = new ArrayList<>();
 		items.add(highQuantityItem);
 		testBill.setItems(items);

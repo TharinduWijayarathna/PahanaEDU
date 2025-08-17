@@ -194,8 +194,8 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_Success() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(1, "Updated Book", "Updated description", 49.99, 40, "1234567890", "Author",
-				"Publisher", new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(1, "Updated Book", "Updated description", 49.99, 40, "1234567890",
+				"Author", "Publisher", new Date(System.currentTimeMillis()));
 		when(productDAO.updateProduct(productToUpdate)).thenReturn(true);
 
 		// Act
@@ -224,8 +224,8 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateProduct_DatabaseError() throws SQLException {
 		// Arrange
-		Product productToUpdate = new Product(1, "Test Book", "Description", 29.99, 20, "1234567890", "Author", "Publisher",
-				new Date(System.currentTimeMillis()));
+		Product productToUpdate = new Product(1, "Test Book", "Description", 29.99, 20, "1234567890", "Author",
+				"Publisher", new Date(System.currentTimeMillis()));
 		when(productDAO.updateProduct(productToUpdate)).thenThrow(new SQLException("Database error"));
 
 		// Act & Assert
@@ -382,12 +382,12 @@ public class ProductServiceTest {
 		// Test that quantity field works correctly
 		Product product = new Product();
 		product.setQuantity(25);
-		
+
 		assertEquals("Quantity should be set correctly", 25, product.getQuantity());
-		
+
 		product.setQuantity(0);
 		assertEquals("Quantity should handle zero", 0, product.getQuantity());
-		
+
 		product.setQuantity(1000);
 		assertEquals("Quantity should handle large numbers", 1000, product.getQuantity());
 	}

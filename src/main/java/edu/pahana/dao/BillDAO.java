@@ -141,11 +141,10 @@ public class BillDAO {
 	 * @throws SQLException if a database error occurs
 	 */
 	public List<Bill> searchBills(String searchTerm) throws SQLException {
-		String sql = "SELECT b.*, c.name as customer_name, c.account_number " + 
-					"FROM Bill b " +
-					"JOIN Customer c ON b.customer_id = c.customer_id " + 
-					"WHERE c.name LIKE ? OR c.account_number LIKE ? OR CAST(b.bill_id AS CHAR) LIKE ? " +
-					"ORDER BY b.bill_date DESC";
+		String sql = "SELECT b.*, c.name as customer_name, c.account_number " + "FROM Bill b "
+				+ "JOIN Customer c ON b.customer_id = c.customer_id "
+				+ "WHERE c.name LIKE ? OR c.account_number LIKE ? OR CAST(b.bill_id AS CHAR) LIKE ? "
+				+ "ORDER BY b.bill_date DESC";
 
 		List<Bill> bills = new ArrayList<>();
 

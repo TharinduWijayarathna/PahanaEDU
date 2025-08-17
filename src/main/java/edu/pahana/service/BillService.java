@@ -56,7 +56,7 @@ public class BillService {
 
 			// Create bill items
 			boolean itemsCreated = billItemDAO.createBillItems(bill.getItems());
-			
+
 			if (itemsCreated) {
 				// Update stock quantities after successful bill creation
 				try {
@@ -68,7 +68,7 @@ public class BillService {
 					// Note: In a production system, you might want to rollback the transaction here
 				}
 			}
-			
+
 			return itemsCreated;
 		}
 
@@ -184,7 +184,7 @@ public class BillService {
 			if (item.getQuantity() <= 0) {
 				return false;
 			}
-			
+
 			// Check stock availability
 			if (product.getQuantity() < item.getQuantity()) {
 				return false;

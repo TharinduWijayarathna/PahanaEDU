@@ -75,7 +75,8 @@ public class ActivityController extends HttpServlet {
 				activities = activityService.getActivitiesByType(activityType.trim());
 			} else if (username != null && !username.trim().isEmpty()) {
 				activities = activityService.getActivitiesByUsername(username.trim());
-			} else if (startDate != null && !startDate.trim().isEmpty() && endDate != null && !endDate.trim().isEmpty()) {
+			} else if (startDate != null && !startDate.trim().isEmpty() && endDate != null
+					&& !endDate.trim().isEmpty()) {
 				try {
 					LocalDateTime startDateTime = LocalDateTime.parse(startDate + "T00:00:00");
 					LocalDateTime endDateTime = LocalDateTime.parse(endDate + "T23:59:59");
@@ -89,9 +90,10 @@ public class ActivityController extends HttpServlet {
 				// In a real application, you'd want to implement search in the DAO
 				activities = activityService.getAllActivities();
 				activities = activities.stream()
-						.filter(activity -> activity.getDescription().toLowerCase().contains(searchTerm.toLowerCase()) ||
-								(activity.getEntityName() != null && activity.getEntityName().toLowerCase().contains(searchTerm.toLowerCase())) ||
-								activity.getUsername().toLowerCase().contains(searchTerm.toLowerCase()))
+						.filter(activity -> activity.getDescription().toLowerCase().contains(searchTerm.toLowerCase())
+								|| (activity.getEntityName() != null
+										&& activity.getEntityName().toLowerCase().contains(searchTerm.toLowerCase()))
+								|| activity.getUsername().toLowerCase().contains(searchTerm.toLowerCase()))
 						.toList();
 			} else {
 				// Get all activities
@@ -111,18 +113,10 @@ public class ActivityController extends HttpServlet {
 			request.setAttribute("filterSearchTerm", searchTerm);
 
 			// Get unique activity types for filter dropdown
-			List<String> activityTypes = List.of(
-					Activity.TYPE_BILL_CREATED,
-					Activity.TYPE_BILL_UPDATED,
-					Activity.TYPE_BILL_PAID,
-					Activity.TYPE_CUSTOMER_ADDED,
-					Activity.TYPE_CUSTOMER_UPDATED,
-					Activity.TYPE_PRODUCT_ADDED,
-					Activity.TYPE_PRODUCT_UPDATED,
-					Activity.TYPE_USER_LOGIN,
-					Activity.TYPE_SYSTEM_BACKUP,
-					Activity.TYPE_SYSTEM_MAINTENANCE
-			);
+			List<String> activityTypes = List.of(Activity.TYPE_BILL_CREATED, Activity.TYPE_BILL_UPDATED,
+					Activity.TYPE_BILL_PAID, Activity.TYPE_CUSTOMER_ADDED, Activity.TYPE_CUSTOMER_UPDATED,
+					Activity.TYPE_PRODUCT_ADDED, Activity.TYPE_PRODUCT_UPDATED, Activity.TYPE_USER_LOGIN,
+					Activity.TYPE_SYSTEM_BACKUP, Activity.TYPE_SYSTEM_MAINTENANCE);
 			request.setAttribute("activityTypes", activityTypes);
 
 			request.getRequestDispatcher("WEB-INF/view/activity/listActivities.jsp").forward(request, response);
