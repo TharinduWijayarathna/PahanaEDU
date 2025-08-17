@@ -134,4 +134,30 @@ public class UserService {
     public boolean deleteUser(int userId) throws SQLException {
         return userDAO.deleteUser(userId);
     }
+    
+    /**
+     * Updates user profile (username and optionally password)
+     * 
+     * @param userId The user ID
+     * @param username The new username
+     * @param newPassword The new password (can be null/empty to keep current)
+     * @return true if successful, false otherwise
+     * @throws SQLException if a database error occurs
+     */
+    public boolean updateUserProfile(int userId, String username, String newPassword) throws SQLException {
+        User user = userDAO.getUserById(userId);
+        if (user == null) {
+            return false;
+        }
+        
+        // Update username
+        user.setUsername(username);
+        
+        // Update password if provided
+        if (newPassword != null && !newPassword.trim().isEmpty()) {
+            user.setPassword(newPassword);
+        }
+        
+        return userDAO.updateUser(user);
+    }
 }

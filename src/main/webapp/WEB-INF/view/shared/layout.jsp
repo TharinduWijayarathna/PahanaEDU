@@ -82,18 +82,22 @@
 				<!-- User Menu -->
 				<div class="flex items-center space-x-4">
 					<div class="flex items-center space-x-3">
-						<div
-							class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-							<i class="fas fa-user text-orange-600 text-sm"></i>
-						</div>
 						<div class="hidden md:block">
 							<p class="text-sm font-medium text-gray-900">${sessionScope.username}</p>
 							<p class="text-xs text-gray-500 capitalize">${sessionScope.role}</p>
 						</div>
-						<a href="dashboard?action=logout"
-							class="text-gray-400 hover:text-red-500 transition-colors duration-200">
-							<i class="fas fa-sign-out-alt"></i>
-						</a>
+						<div class="flex items-center space-x-2">
+							<a href="auth?action=profile"
+								class="text-gray-400 hover:text-orange-500 transition-colors duration-200"
+								title="Profile">
+								<i class="fas fa-user-circle text-lg"></i>
+							</a>
+							<a href="auth?action=logout"
+								class="text-gray-400 hover:text-red-500 transition-colors duration-200"
+								title="Logout">
+								<i class="fas fa-sign-out-alt text-lg"></i>
+							</a>
+						</div>
 					</div>
 				</div>
 
