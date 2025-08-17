@@ -8,17 +8,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Service class for managing system activities and events.
- * Provides business logic for activity tracking and retrieval.
+ * Service class for managing system activities and events. Provides business
+ * logic for activity tracking and retrieval.
  */
 public class ActivityService {
-    
-    private ActivityDAO activityDAO;
-    
-    public ActivityService() {
-        this.activityDAO = new ActivityDAO();
-    }
-    
+
+	private ActivityDAO activityDAO;
+
+	public ActivityService() {
+		this.activityDAO = new ActivityDAO();
+	}
+
     /**
      * Initialize the activity system (create table if needed)
      */

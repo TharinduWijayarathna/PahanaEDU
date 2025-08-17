@@ -6,32 +6,32 @@ import java.sql.SQLException;
 
 public class DBConnection {
 
-    private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/pahanaedudb";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
+	private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/pahanaedudb";
+	private static final String DB_USER = "root";
+	private static final String DB_PASSWORD = "";
 
-    private static DBConnection instance;
+	private static DBConnection instance;
 
-    private DBConnection() {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+	private DBConnection() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 
-    public static DBConnection getInstance() {
-        if (instance == null) {
-            synchronized (DBConnection.class) {
-                if (instance == null) {
-                    instance = new DBConnection();
-                }
-            }
-        }
-        return instance;
-    }
+	public static DBConnection getInstance() {
+		if (instance == null) {
+			synchronized (DBConnection.class) {
+				if (instance == null) {
+					instance = new DBConnection();
+				}
+			}
+		}
+		return instance;
+	}
 
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-    }
+	public Connection getConnection() throws SQLException {
+		return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+	}
 }
