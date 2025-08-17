@@ -206,38 +206,28 @@
 				<a href="#" class="text-sm text-orange-600 hover:text-orange-700">View All</a>
 			</div>
 			<div class="space-y-4">
-				<div class="flex items-start space-x-3">
-					<div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-					<div class="flex-1">
-						<p class="text-sm font-medium text-gray-900">New bill generated</p>
-						<p class="text-xs text-gray-500">Bill #BILL-2024-001 for John Doe</p>
-						<p class="text-xs text-gray-400">2 hours ago</p>
-					</div>
-				</div>
-				<div class="flex items-start space-x-3">
-					<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-					<div class="flex-1">
-						<p class="text-sm font-medium text-gray-900">New customer added</p>
-						<p class="text-xs text-gray-500">Jane Smith registered</p>
-						<p class="text-xs text-gray-400">4 hours ago</p>
-					</div>
-				</div>
-				<div class="flex items-start space-x-3">
-					<div class="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-					<div class="flex-1">
-						<p class="text-sm font-medium text-gray-900">Product updated</p>
-						<p class="text-xs text-gray-500">"Advanced Mathematics" price updated</p>
-						<p class="text-xs text-gray-400">6 hours ago</p>
-					</div>
-				</div>
-				<div class="flex items-start space-x-3">
-					<div class="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-					<div class="flex-1">
-						<p class="text-sm font-medium text-gray-900">System backup</p>
-						<p class="text-xs text-gray-500">Daily backup completed successfully</p>
-						<p class="text-xs text-gray-400">1 day ago</p>
-					</div>
-				</div>
+				<c:choose>
+					<c:when test="${not empty recentActivities}">
+						<c:forEach var="activity" items="${recentActivities}">
+							<div class="flex items-start space-x-3">
+								<div class="w-2 h-2 bg-${activity.color}-500 rounded-full mt-2"></div>
+								<div class="flex-1">
+									<p class="text-sm font-medium text-gray-900">${activity.description}</p>
+									<c:if test="${not empty activity.entityName}">
+										<p class="text-xs text-gray-500">${activity.entityName}</p>
+									</c:if>
+									<p class="text-xs text-gray-400">${activity.timeAgo}</p>
+								</div>
+							</div>
+						</c:forEach>
+					</c:when>
+					<c:otherwise>
+						<div class="text-center py-8">
+							<i class="fas fa-info-circle text-gray-400 text-2xl mb-2"></i>
+							<p class="text-sm text-gray-500">No recent activities</p>
+						</div>
+					</c:otherwise>
+				</c:choose>
 			</div>
 		</div>
 

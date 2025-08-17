@@ -7,6 +7,7 @@ import edu.pahana.model.Product;
 import edu.pahana.service.BillService;
 import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
+import edu.pahana.service.ActivityService;
 import edu.pahana.validation.ValidationUtils;
 
 import javax.servlet.ServletException;
@@ -28,12 +29,22 @@ public class BillController extends HttpServlet {
     private BillService billService;
     private CustomerService customerService;
     private ProductService productService;
+    private ActivityService activityService;
     
     @Override
     public void init() throws ServletException {
         billService = new BillService();
         customerService = CustomerService.getInstance();
         productService = ProductService.getInstance();
+        activityService = new ActivityService();
+        
+        // Initialize activity system
+        try {
+            activityService.initialize();
+        } catch (Exception e) {
+            // Log error but don't fail initialization
+            System.err.println("Failed to initialize activity system: " + e.getMessage());
+        }
     }
     
     @Override
@@ -227,6 +238,16 @@ public class BillController extends HttpServlet {
             Bill bill = billService.createBillFromItems(customerId, items);
             
             if (bill != null && billService.createBill(bill)) {
+                // Log bill creation activity
+                try {
+                    HttpSession session = request.getSession(false);
+                    String username = session != null ? (String) session.getAttribute("username") : "system";
+                    activityService.logBillCreated(bill.getBillId(), bill.getCustomerName(), username);
+                } catch (Exception e) {
+                    // Log error but don't fail bill creation
+                    System.err.println("Failed to log bill creation activity: " + e.getMessage());
+                }
+                
                 request.setAttribute("success", "Bill created successfully");
                 response.sendRedirect("bill?action=view&id=" + bill.getBillId());
             } else {
