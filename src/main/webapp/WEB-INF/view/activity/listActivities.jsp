@@ -299,7 +299,7 @@ pageContext.setAttribute("timeFormatter", timeFormatter);
 		
 		<!-- Pagination Controls -->
 		<c:if test="${not empty pagination and pagination.totalPages > 1}">
-			<%@ include file="pagination.jsp" %>
+			<%@ include file="./pagination.jsp" %>
 		</c:if>
 	</div>
 </div>
