@@ -411,4 +411,23 @@ public class ValidationUtils {
         
         return errors;
     }
+    
+    /**
+     * Validates profile update form
+     */
+    public static Map<String, String> validateProfileUpdate(String username, String newPassword) {
+        Map<String, String> errors = new HashMap<>();
+        
+        if (!isNotEmpty(username)) {
+            errors.put("username", "Username is required");
+        } else if (!isValidUsername(username)) {
+            errors.put("username", "Username must be 3-20 characters long and contain only letters, numbers, and underscores");
+        }
+        
+        if (isNotEmpty(newPassword) && !hasMinLength(newPassword, 6)) {
+            errors.put("newPassword", "Password must be at least 6 characters long");
+        }
+        
+        return errors;
+    }
 }

@@ -82,18 +82,22 @@
 				<!-- User Menu -->
 				<div class="flex items-center space-x-4">
 					<div class="flex items-center space-x-3">
-						<div
-							class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-							<i class="fas fa-user text-orange-600 text-sm"></i>
-						</div>
 						<div class="hidden md:block">
 							<p class="text-sm font-medium text-gray-900">${sessionScope.username}</p>
 							<p class="text-xs text-gray-500 capitalize">${sessionScope.role}</p>
 						</div>
-						<a href="dashboard?action=logout"
-							class="text-gray-400 hover:text-red-500 transition-colors duration-200">
-							<i class="fas fa-sign-out-alt"></i>
-						</a>
+						<div class="flex items-center space-x-2">
+							<a href="auth?action=profile"
+								class="text-gray-400 hover:text-orange-500 transition-colors duration-200"
+								title="Profile">
+								<i class="fas fa-user-circle text-lg"></i>
+							</a>
+							<a href="auth?action=logout"
+								class="text-gray-400 hover:text-red-500 transition-colors duration-200"
+								title="Logout">
+								<i class="fas fa-sign-out-alt text-lg"></i>
+							</a>
+						</div>
 					</div>
 				</div>
 
@@ -137,5 +141,68 @@
 			</div>
 		</div>
 	</nav>
+
+	<!-- Main Content Wrapper -->
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		
+		<div class="mb-6">
+			<!-- Page Title will be set by individual pages -->
+		</div>
+
+		<!-- Success Messages -->
+		<c:if test="${not empty success}">
+			<div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+				<div class="flex items-center">
+					<i class="fas fa-check-circle text-green-500 mr-2"></i>
+					<span class="text-green-800">${success}</span>
+				</div>
+			</div>
+		</c:if>
+		
+		<!-- Global Error Messages -->
+		<c:if test="${not empty error}">
+			<div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+				<div class="flex items-center">
+					<i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+					<span class="text-red-800">${error}</span>
+				</div>
+			</div>
+		</c:if>
+		
+		<!-- Validation Error Messages -->
+		<c:if test="${not empty validationErrors}">
+			<div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+				<div class="flex items-start">
+					<i class="fas fa-exclamation-triangle text-red-500 mr-2 mt-1"></i>
+					<div class="flex-1">
+						<h3 class="text-red-800 font-medium mb-2">Please correct the following errors:</h3>
+						<ul class="list-disc list-inside text-red-700 space-y-1">
+							<c:forEach var="error" items="${validationErrors}">
+								<li>${error}</li>
+							</c:forEach>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</c:if>
+		
+		<!-- Field-specific validation errors -->
+		<c:if test="${not empty fieldErrors}">
+			<div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+				<div class="flex items-start">
+					<i class="fas fa-exclamation-triangle text-yellow-500 mr-2 mt-1"></i>
+					<div class="flex-1">
+						<h3 class="text-yellow-800 font-medium mb-2">Please check the following fields:</h3>
+						<ul class="list-disc list-inside text-yellow-700 space-y-1">
+							<c:forEach var="fieldError" items="${fieldErrors}">
+								<li><strong>${fieldError.key}:</strong> ${fieldError.value}</li>
+							</c:forEach>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</c:if>
+
+	</div>
 </body>
 </html>

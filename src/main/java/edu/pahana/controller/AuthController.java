@@ -58,7 +58,7 @@ public class AuthController extends HttpServlet {
     }
     
     /**
-     * Handles POST requests for login and registration
+     * Handles POST requests for login, registration, and profile updates
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -67,6 +67,8 @@ public class AuthController extends HttpServlet {
             login(request, response);
         } else if (action.equals("register")) {
             register(request, response);
+        } else if (action.equals("updateProfile")) {
+            updateProfile(request, response);
         }
     }
     
@@ -214,5 +216,89 @@ public class AuthController extends HttpServlet {
         }
         
         response.sendRedirect("auth?action=login");
+    }
+    
+    /**
+     * Processes profile update request
+     */
+    private void updateProfile(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Check if user is logged in
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect("auth?action=login");
+            return;
+        }
+        
+        String userIdStr = request.getParameter("userId");
+        String username = request.getParameter("username");
+        String newPassword = request.getParameter("newPassword");
+        
+        // Sanitize inputs
+        userIdStr = ValidationUtils.sanitizeString(userIdStr);
+        username = ValidationUtils.sanitizeString(username);
+        newPassword = ValidationUtils.sanitizeString(newPassword);
+        
+        // Validate input
+        Map<String, String> validationErrors = ValidationUtils.validateProfileUpdate(username, newPassword);
+        
+        if (!validationErrors.isEmpty()) {
+            // Validation failed - show errors
+            request.setAttribute("fieldErrors", validationErrors);
+            request.setAttribute("username", username);
+            request.setAttribute("newPassword", newPassword);
+            request.getRequestDispatcher("WEB-INF/view/auth/profile.jsp").forward(request, response);
+            return;
+        }
+        
+        try {
+            int userId = Integer.parseInt(userIdStr);
+            User currentUser = (User) session.getAttribute("user");
+            
+            // Check if user is updating their own profile
+            if (currentUser.getUserId() != userId) {
+                request.setAttribute("error", "You can only update your own profile");
+                request.getRequestDispatcher("WEB-INF/view/auth/profile.jsp").forward(request, response);
+                return;
+            }
+            
+            // Check if username is being changed and if it already exists
+            if (!username.equals(currentUser.getUsername())) {
+                // Check if new username already exists
+                User existingUser = userService.getUserByUsername(username);
+                if (existingUser != null) {
+                    request.setAttribute("error", "Username already exists");
+                    request.setAttribute("username", username);
+                    request.getRequestDispatcher("WEB-INF/view/auth/profile.jsp").forward(request, response);
+                    return;
+                }
+            }
+            
+            // Update user profile
+            boolean success = userService.updateUserProfile(userId, username, newPassword);
+            
+            if (success) {
+                // Update session with new user data
+                User updatedUser = userService.getUserById(userId);
+                if (updatedUser != null) {
+                    session.setAttribute("user", updatedUser);
+                    session.setAttribute("username", updatedUser.getUsername());
+                    session.setAttribute("role", updatedUser.getRole());
+                }
+                
+                request.setAttribute("success", "Profile updated successfully");
+                response.sendRedirect("auth?action=profile");
+            } else {
+                request.setAttribute("error", "Failed to update profile");
+                request.setAttribute("username", username);
+                request.getRequestDispatcher("WEB-INF/view/auth/profile.jsp").forward(request, response);
+            }
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid user ID");
+            request.getRequestDispatcher("WEB-INF/view/auth/profile.jsp").forward(request, response);
+        } catch (SQLException e) {
+            request.setAttribute("error", "Database error: " + e.getMessage());
+            request.setAttribute("username", username);
+            request.getRequestDispatcher("WEB-INF/view/auth/profile.jsp").forward(request, response);
+        }
     }
 }
