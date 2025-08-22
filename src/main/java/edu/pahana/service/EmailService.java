@@ -152,6 +152,48 @@ public class EmailService {
     }
     
     /**
+     * Send bill email for walk-in customers
+     * @param bill The bill to send
+     * @param recipientEmail The email address to send the bill to
+     * @return true if email sent successfully, false otherwise
+     */
+    public boolean sendBillEmailForWalkIn(Bill bill, String recipientEmail) {
+        try {
+            Session session = Session.getInstance(mailProperties, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(smtpUsername, smtpPassword);
+                }
+            });
+            
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(fromEmail, fromName));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
+            message.setSubject("Your Bill #" + bill.getBillId() + " - Pahana Edu Bookshop");
+            
+            // Create the message body
+            MimeMultipart multipart = new MimeMultipart();
+            
+            // Add HTML content for walk-in customer
+            MimeBodyPart htmlPart = new MimeBodyPart();
+            htmlPart.setContent(generateBillEmailHTMLForWalkIn(bill), "text/html; charset=UTF-8");
+            multipart.addBodyPart(htmlPart);
+            
+            message.setContent(multipart);
+            
+            // Send the message
+            Transport.send(message);
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("Error sending email: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
      * Generate HTML content for bill email
      * @param bill The bill details
      * @param customer The customer details
@@ -303,6 +345,165 @@ public class EmailService {
         html.append("<p style='margin-top: 15px; font-size: 11px; color: #9a3412;'>");
         html.append("<strong>").append(companyName).append("</strong> - ").append(companyTagline);
         html.append("</p>");
+        html.append("</div>");
+        
+        html.append("</body>");
+        html.append("</html>");
+        
+        return html.toString();
+    }
+    
+    /**
+     * Generate HTML content for walk-in customer bill email
+     * @param bill The bill details
+     * @return HTML string for the email
+     */
+    private String generateBillEmailHTMLForWalkIn(Bill bill) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        String billDate = bill.getBillDate().format(formatter);
+        
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>");
+        html.append("<html>");
+        html.append("<head>");
+        html.append("<meta charset='UTF-8'>");
+        html.append("<title>Bill #").append(bill.getBillId()).append("</title>");
+        html.append("<style>");
+        html.append("body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }");
+        html.append(".header { text-align: center; margin-bottom: 30px; padding: 20px; border-bottom: 3px solid #ea580c; background: #fff7ed; }");
+        html.append(".company-name { font-size: 32px; font-weight: bold; color: #ea580c; margin-bottom: 8px; }");
+        html.append(".company-tagline { font-size: 16px; color: #c2410c; margin-bottom: 12px; font-style: italic; }");
+        html.append(".company-info { font-size: 13px; color: #7c2d12; line-height: 1.8; }");
+        html.append(".bill-header { display: flex; justify-content: space-between; margin-bottom: 30px; padding: 25px; background: #fff7ed; border-radius: 8px; border: 1px solid #fdba74; }");
+        html.append(".bill-section { flex: 1; }");
+        html.append(".section-title { color: #ea580c; margin-bottom: 18px; font-size: 20px; border-bottom: 2px solid #fdba74; padding-bottom: 8px; }");
+        html.append(".bill-info { font-size: 18px; font-weight: bold; color: #ea580c; margin-bottom: 5px; }");
+        html.append(".info-text { margin-bottom: 8px; font-size: 14px; color: #7c2d12; }");
+        html.append(".status-paid { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; }");
+        html.append(".status-pending { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; }");
+        html.append(".status-cancelled { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; }");
+        html.append("table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }");
+        html.append("th { padding: 15px; text-align: left; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; background: #ea580c; color: white; }");
+        html.append("td { padding: 15px; text-align: left; color: #7c2d12; font-size: 14px; }");
+        html.append("tr:nth-child(even) { background: #fff7ed; }");
+        html.append("tr:nth-child(odd) { background: white; }");
+        html.append(".bill-summary { margin: 30px 0; padding: 25px; background: #fff7ed; border-radius: 8px; border: 1px solid #fdba74; }");
+        html.append(".summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }");
+        html.append(".summary-label { color: #7c2d12; font-size: 14px; }");
+        html.append(".summary-value { color: #7c2d12; font-size: 14px; font-weight: bold; }");
+        html.append(".discount-value { color: #059669; font-size: 14px; font-weight: bold; }");
+        html.append(".total-row { display: flex; justify-content: space-between; align-items: center; }");
+        html.append(".total-label { color: #ea580c; font-size: 18px; font-weight: bold; }");
+        html.append(".total-value { color: #ea580c; font-size: 24px; font-weight: bold; }");
+        html.append(".footer { margin-top: 50px; padding: 25px; border-top: 2px solid #fdba74; text-align: center; font-size: 13px; color: #7c2d12; background: #fff7ed; border-radius: 8px; }");
+        html.append("</style>");
+        html.append("</head>");
+        html.append("<body>");
+        
+        // Header
+        html.append("<div class='header'>");
+        html.append("<div class='company-name'>").append(companyName).append("</div>");
+        html.append("<div class='company-tagline'>").append(companyTagline).append("</div>");
+        html.append("<div class='company-info'>");
+        html.append("<strong>Address:</strong> ").append(companyAddress).append("<br>");
+        html.append("<strong>Phone:</strong> ").append(companyPhone).append(" | <strong>Email:</strong> ").append(companyEmail).append("<br>");
+        html.append("<strong>Website:</strong> ").append(companyWebsite);
+        html.append("</div>");
+        html.append("</div>");
+        
+        // Bill Header - Modified for walk-in customer
+        html.append("<div class='bill-header'>");
+        html.append("<div class='bill-section'>");
+        html.append("<h3 class='section-title'>Bill To:</h3>");
+        html.append("<p class='info-text'><strong>Customer:</strong> Walk-in Customer</p>");
+        html.append("<p class='info-text'><strong>Type:</strong> Walk-in Purchase</p>");
+        html.append("<p class='info-text'><strong>Account:</strong> WALK-IN</p>");
+        html.append("<p class='info-text'><em>No customer account information available</em></p>");
+        html.append("</div>");
+        html.append("<div class='bill-section'>");
+        html.append("<h3 class='section-title'>Bill Information:</h3>");
+        html.append("<div class='bill-info'>Bill #").append(bill.getBillId()).append("</div>");
+        html.append("<p class='info-text'><strong>Date:</strong> ").append(billDate).append("</p>");
+        html.append("<p class='info-text'><strong>Status:</strong> ");
+        
+        // Status styling
+        if ("paid".equals(bill.getStatus())) {
+            html.append("<span class='status-paid'>").append(bill.getStatus()).append("</span>");
+        } else if ("cancelled".equals(bill.getStatus())) {
+            html.append("<span class='status-cancelled'>").append(bill.getStatus()).append("</span>");
+        } else {
+            html.append("<span class='status-pending'>").append(bill.getStatus()).append("</span>");
+        }
+        html.append("</p>");
+        html.append("</div>");
+        html.append("</div>");
+        
+        // Items Table
+        html.append("<h3 class='section-title'>Items Purchased:</h3>");
+        html.append("<table>");
+        html.append("<thead>");
+        html.append("<tr>");
+        html.append("<th>#</th>");
+        html.append("<th>Product</th>");
+        html.append("<th>Quantity</th>");
+        html.append("<th>Unit Price</th>");
+        html.append("<th>Subtotal</th>");
+        html.append("</tr>");
+        html.append("</thead>");
+
+        html.append("<tbody>");
+        
+        if (bill.getItems() != null) {
+            for (int i = 0; i < bill.getItems().size(); i++) {
+                var item = bill.getItems().get(i);
+                html.append("<tr>");
+                html.append("<td><strong>").append(i + 1).append("</strong></td>");
+                html.append("<td><strong>").append(item.getProductName()).append("</strong></td>");
+                html.append("<td>").append(item.getQuantity()).append("</td>");
+                html.append("<td>Rs. ").append(item.getUnitPrice()).append("</td>");
+                html.append("<td><strong>Rs. ").append(item.getSubtotal()).append("</strong></td>");
+                html.append("</tr>");
+            }
+        }
+        
+        html.append("</tbody>");
+        html.append("</table>");
+        
+        // Bill Summary
+        html.append("<div class='bill-summary'>");
+        html.append("<h3 class='section-title'>Bill Summary</h3>");
+        
+        java.math.BigDecimal subtotal = bill.getTotalAmount();
+        if (bill.getDiscount().compareTo(java.math.BigDecimal.ZERO) > 0) {
+            subtotal = bill.getTotalAmount().add(bill.getTotalAmount().multiply(bill.getDiscount()).divide(java.math.BigDecimal.valueOf(100)));
+        }
+        
+        html.append("<div class='summary-row'>");
+        html.append("<span class='summary-label'>Subtotal:</span>");
+        html.append("<span class='summary-value'>Rs. ").append(subtotal).append("</span>");
+        html.append("</div>");
+        
+        if (bill.getDiscount().compareTo(java.math.BigDecimal.ZERO) > 0) {
+            java.math.BigDecimal discountAmount = bill.getTotalAmount().multiply(bill.getDiscount()).divide(java.math.BigDecimal.valueOf(100));
+            html.append("<div class='summary-row'>");
+            html.append("<span class='summary-label'>Discount (").append(bill.getDiscount()).append("%):</span>");
+            html.append("<span class='discount-value'>- Rs. ").append(discountAmount).append("</span>");
+            html.append("</div>");
+        }
+        
+        html.append("<hr style='margin: 15px 0; border: none; border-top: 1px solid #fdba74;'>");
+        html.append("<div class='total-row'>");
+        html.append("<span class='total-label'>Total Amount:</span>");
+        html.append("<span class='total-value'>Rs. ").append(bill.getTotalAmount()).append("</span>");
+        html.append("</div>");
+        html.append("</div>");
+        
+        // Footer
+        html.append("<div class='footer'>");
+        html.append("<strong>Thank you for your business!</strong><br>");
+        html.append("If you have any questions about this bill, please contact us at ").append(companyPhone).append(" or ").append(companyEmail).append(".<br>");
+        html.append("<em>This is an automated email. Please do not reply to this email address.</em><br><br>");
+        html.append("Visit us at ").append(companyWebsite).append(" for more information.");
         html.append("</div>");
         
         html.append("</body>");

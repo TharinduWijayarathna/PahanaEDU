@@ -29,10 +29,12 @@ public class BillService {
 	}
 
 	public boolean createBill(Bill bill) throws SQLException {
-		// Validate customer exists
-		Customer customer = customerDAO.getCustomerById(bill.getCustomerId());
-		if (customer == null) {
-			return false;
+		// Validate customer exists (skip validation for walk-in customers with customerId = -1)
+		if (bill.getCustomerId() != -1) {
+			Customer customer = customerDAO.getCustomerById(bill.getCustomerId());
+			if (customer == null) {
+				return false;
+			}
 		}
 
 		// Validate bill items including stock availability (only if items exist)
@@ -181,14 +183,20 @@ public class BillService {
 	}
 
 	public Bill createBillFromItems(int customerId, List<BillItem> items, BigDecimal billDiscount) throws SQLException {
-		// Get customer information
-		Customer customer = customerDAO.getCustomerById(customerId);
-		if (customer == null) {
-			return null;
+		Bill bill;
+		
+		// Handle walk-in customer (customerId = -1) or regular customer
+		if (customerId == -1) {
+			// Walk-in customer
+			bill = new Bill(-1, "Walk-in Customer", "WALK-IN");
+		} else {
+			// Regular customer - get customer information
+			Customer customer = customerDAO.getCustomerById(customerId);
+			if (customer == null) {
+				return null;
+			}
+			bill = new Bill(customerId, customer.getName(), customer.getAccountNumber());
 		}
-
-		// Create bill
-		Bill bill = new Bill(customerId, customer.getName(), customer.getAccountNumber());
 
 		// Validate and set items
 		List<BillItem> validItems = new ArrayList<>();

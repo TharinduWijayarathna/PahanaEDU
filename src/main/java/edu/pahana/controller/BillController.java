@@ -207,21 +207,18 @@ public class BillController extends HttpServlet {
 			// Get bill-level discount
 			String billDiscountStr = request.getParameter("billDiscount");
 
-			// Validate customer ID
-			if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
-				request.setAttribute("error", "Please select a customer");
-				showCreateBillForm(request, response);
-				return;
+			// Handle customer ID - allow empty for walk-in customers
+			Integer customerId = null;
+			if (customerIdStr != null && !customerIdStr.trim().isEmpty()) {
+				try {
+					customerId = Integer.parseInt(customerIdStr);
+				} catch (NumberFormatException e) {
+					request.setAttribute("error", "Invalid customer selected");
+					showCreateBillForm(request, response);
+					return;
+				}
 			}
-
-			int customerId;
-			try {
-				customerId = Integer.parseInt(customerIdStr);
-			} catch (NumberFormatException e) {
-				request.setAttribute("error", "Invalid customer selected");
-				showCreateBillForm(request, response);
-				return;
-			}
+			// If customerId is null, this will be treated as a walk-in customer
 
 			if (productIds == null || quantities == null || unitPrices == null || productIds.length == 0) {
 				request.setAttribute("error", "Please add at least one item to the invoice");
@@ -303,8 +300,9 @@ public class BillController extends HttpServlet {
 				return;
 			}
 
-			// Create bill
-			Bill bill = billService.createBillFromItems(customerId, items, BigDecimal.valueOf(billDiscount));
+			// Create bill (use -1 for walk-in customers)
+			int customerIdForBill = (customerId != null) ? customerId : -1;
+			Bill bill = billService.createBillFromItems(customerIdForBill, items, BigDecimal.valueOf(billDiscount));
 
 			if (bill != null && billService.createBill(bill)) {
 				// Update stock quantities
@@ -555,30 +553,38 @@ public class BillController extends HttpServlet {
 				Bill bill = billService.getBillById(billId);
 
 				if (bill != null) {
-					// Get customer details
-					Customer customer = customerService.getCustomerById(bill.getCustomerId());
+					// Handle both regular customers and walk-in customers
+					boolean emailSent;
 					
-					if (customer != null) {
-						// Send email
-						boolean emailSent = emailService.sendBillEmail(bill, customer, recipientEmail.trim());
-						
-						if (emailSent) {
-							// Log email activity
-							try {
-								HttpSession session = request.getSession(false);
-								String username = session != null ? (String) session.getAttribute("username") : "system";
-								activityService.logBillEmailSent(bill.getBillId(), bill.getCustomerName(), username, recipientEmail);
-							} catch (Exception e) {
-								// Log error but don't fail email sending
-								System.err.println("Failed to log email activity: " + e.getMessage());
-							}
-							
-							request.setAttribute("success", "Bill sent successfully to " + recipientEmail);
-						} else {
-							request.setAttribute("error", "Failed to send email. Please check your email configuration.");
-						}
+					if (bill.getCustomerId() == -1) {
+						// Walk-in customer - send email using bill information only
+						emailSent = emailService.sendBillEmailForWalkIn(bill, recipientEmail.trim());
 					} else {
-						request.setAttribute("error", "Customer information not found");
+						// Regular customer - get customer details and send email
+						Customer customer = customerService.getCustomerById(bill.getCustomerId());
+						
+						if (customer != null) {
+							emailSent = emailService.sendBillEmail(bill, customer, recipientEmail.trim());
+						} else {
+							request.setAttribute("error", "Customer information not found");
+							return;
+						}
+					}
+					
+					if (emailSent) {
+						// Log email activity
+						try {
+							HttpSession session = request.getSession(false);
+							String username = session != null ? (String) session.getAttribute("username") : "system";
+							activityService.logBillEmailSent(bill.getBillId(), bill.getCustomerName(), username, recipientEmail);
+						} catch (Exception e) {
+							// Log error but don't fail email sending
+							System.err.println("Failed to log email activity: " + e.getMessage());
+						}
+						
+						request.setAttribute("success", "Bill sent successfully to " + recipientEmail);
+					} else {
+						request.setAttribute("error", "Failed to send email. Please check your email configuration.");
 					}
 				} else {
 					request.setAttribute("error", "Bill not found");

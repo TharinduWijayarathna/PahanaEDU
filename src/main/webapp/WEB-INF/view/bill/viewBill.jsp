@@ -294,7 +294,7 @@
 			</thead>
 			<tbody>
 				<c:forEach var="item" items="${bill.items}" varStatus="status">
-					<tr style="background: <c:choose><c:when test="${status.index % 2 == 0}">white</c:when><c:otherwise>#fff7ed</c:otherwise></c:choose>;">
+					<tr style="background: white;">
 						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong>${status.index + 1}</strong></td>
 						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong>${item.productName}</strong></td>
 						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;">${item.quantity}</td>

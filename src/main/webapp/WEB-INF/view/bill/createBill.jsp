@@ -44,7 +44,7 @@
 			</h2>
 		</div>
 
-		<form action="bill" method="post" class="p-6 space-y-8">
+		<form action="bill" method="post" class="p-6 space-y-8" onsubmit="return handleFormSubmission(event)">
 			<input type="hidden" name="action" value="create">
 
 			<!-- Customer Information Section -->
@@ -55,11 +55,11 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label for="customerId" class="block text-sm font-medium text-gray-700 mb-2">
-							Select Customer <span class="text-red-500">*</span>
+							Select Customer <span class="text-gray-400">(Optional - Leave empty for walk-in customer)</span>
 						</label>
-						<select name="customerId" id="customerId" required
+						<select name="customerId" id="customerId"
 							class="w-full px-4 py-3 border ${fieldErrors.customerId != null ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-orange-500 focus:border-orange-500'} rounded-lg transition-colors duration-200 bg-white">
-							<option value="">Choose a customer...</option>
+							<option value="">Choose a customer or leave empty for walk-in...</option>
 							<c:forEach var="customer" items="${customers}">
 								<option value="${customer.customerId}" ${customerId == customer.customerId ? 'selected' : ''}>
 									${customer.name} (${customer.accountNumber})
@@ -211,6 +211,26 @@
 </div>
 
 <script>
+    function handleFormSubmission(event) {
+        const customerId = document.getElementById('customerId').value;
+        
+        // Check if no customer is selected
+        if (!customerId || customerId.trim() === '') {
+            // Show confirmation dialog for walk-in customer
+            const confirmed = confirm(
+                "No customer selected. Do you want to proceed with a walk-in customer?\n\n" +
+                "Click 'OK' to create bill for walk-in customer or 'Cancel' to select a customer."
+            );
+            
+            if (!confirmed) {
+                event.preventDefault();
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     function addItem() {
         const container = document.getElementById('items-container');
         const row = container.children[0].cloneNode(true);
