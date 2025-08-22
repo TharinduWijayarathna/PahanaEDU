@@ -151,11 +151,33 @@ public class BillService {
 	}
 
 	public boolean updateBillStatus(int billId, String status) throws SQLException {
-		return billDAO.updateBillStatus(billId, status);
+		// Get bill details before status update
+		Bill bill = billDAO.getBillById(billId);
+		boolean updated = billDAO.updateBillStatus(billId, status);
+		
+		// Restore stock if bill is cancelled
+		if (updated && "Cancelled".equalsIgnoreCase(status) && bill != null && bill.getItems() != null) {
+			for (BillItem item : bill.getItems()) {
+				productDAO.restoreStockQuantity(item.getProductId(), item.getQuantity());
+			}
+		}
+		
+		return updated;
 	}
 
 	public boolean deleteBill(int billId) throws SQLException {
-		return billDAO.deleteBill(billId);
+		// Get bill details before deletion
+		Bill bill = billDAO.getBillById(billId);
+		boolean deleted = billDAO.deleteBill(billId);
+		
+		// Restore stock if bill had items
+		if (deleted && bill != null && bill.getItems() != null) {
+			for (BillItem item : bill.getItems()) {
+				productDAO.restoreStockQuantity(item.getProductId(), item.getQuantity());
+			}
+		}
+		
+		return deleted;
 	}
 
 	public Bill createBillFromItems(int customerId, List<BillItem> items, BigDecimal billDiscount) throws SQLException {

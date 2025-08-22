@@ -966,4 +966,51 @@ public class BillServiceTest {
 		verify(billItemDAO, never()).createBillItems(anyList());
 		verify(productDAO, never()).updateStockQuantity(anyInt(), anyInt());
 	}
+
+	@Test
+	public void testStockReductionOnBillCreation() throws SQLException {
+		// Arrange
+		when(customerDAO.getCustomerById(1)).thenReturn(testCustomer);
+		when(productDAO.getProductById(1)).thenReturn(testProduct);
+		when(billDAO.createBill(testBill)).thenReturn(true);
+		when(billItemDAO.createBillItems(testBill.getItems())).thenReturn(true);
+		when(productDAO.updateStockQuantity(1, 2)).thenReturn(true);
+
+		// Act
+		boolean result = billService.createBill(testBill);
+
+		// Assert
+		assertTrue("Bill creation should succeed", result);
+		verify(productDAO).updateStockQuantity(1, 2);
+	}
+
+	@Test
+	public void testStockRestorationOnBillDeletion() throws SQLException {
+		// Arrange
+		when(billDAO.getBillById(1)).thenReturn(testBill);
+		when(billDAO.deleteBill(1)).thenReturn(true);
+		when(productDAO.restoreStockQuantity(1, 2)).thenReturn(true);
+
+		// Act
+		boolean result = billService.deleteBill(1);
+
+		// Assert
+		assertTrue("Bill deletion should succeed", result);
+		verify(productDAO).restoreStockQuantity(1, 2);
+	}
+
+	@Test
+	public void testStockRestorationOnBillCancellation() throws SQLException {
+		// Arrange
+		when(billDAO.getBillById(1)).thenReturn(testBill);
+		when(billDAO.updateBillStatus(1, "Cancelled")).thenReturn(true);
+		when(productDAO.restoreStockQuantity(1, 2)).thenReturn(true);
+
+		// Act
+		boolean result = billService.updateBillStatus(1, "Cancelled");
+
+		// Assert
+		assertTrue("Bill status update should succeed", result);
+		verify(productDAO).restoreStockQuantity(1, 2);
+	}
 }

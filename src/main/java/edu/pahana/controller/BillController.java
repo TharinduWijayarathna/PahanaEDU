@@ -308,13 +308,29 @@ public class BillController extends HttpServlet {
 
 			if (bill != null && billService.createBill(bill)) {
 				// Update stock quantities
+				boolean stockUpdateSuccess = true;
+				String stockUpdateError = "";
+				
 				try {
 					for (BillItem item : items) {
-						productService.updateStockQuantity(item.getProductId(), item.getQuantity());
+						boolean updated = productService.updateStockQuantity(item.getProductId(), item.getQuantity());
+						if (!updated) {
+							stockUpdateSuccess = false;
+							stockUpdateError = "Failed to update stock for product ID: " + item.getProductId();
+							break;
+						}
 					}
 				} catch (Exception e) {
-					// Log error but don't fail bill creation
+					stockUpdateSuccess = false;
+					stockUpdateError = "Error updating stock quantities: " + e.getMessage();
 					System.err.println("Failed to update stock quantities: " + e.getMessage());
+				}
+				
+				if (!stockUpdateSuccess) {
+					// If stock update failed, we should ideally rollback the bill creation
+					// For now, we'll log the error and show a warning to the user
+					System.err.println("WARNING: Bill created but stock update failed: " + stockUpdateError);
+					request.setAttribute("warning", "Bill created successfully but there was an issue updating product stock. Please check stock levels manually.");
 				}
 
 				// Log bill creation activity
@@ -375,9 +391,39 @@ public class BillController extends HttpServlet {
 
 		try {
 			int billId = Integer.parseInt(billIdStr);
+			
+			// Get current bill status before update
+			Bill currentBill = billService.getBillById(billId);
+			String previousStatus = currentBill != null ? currentBill.getStatus() : null;
+			
 			boolean updated = billService.updateBillStatus(billId, status);
 
 			if (updated) {
+				// Handle stock restoration if bill is cancelled
+				if ("Cancelled".equalsIgnoreCase(status) && currentBill != null && currentBill.getItems() != null) {
+					try {
+						boolean stockRestoreSuccess = true;
+						String stockRestoreError = "";
+						
+						for (BillItem item : currentBill.getItems()) {
+							boolean restored = productService.restoreStockQuantity(item.getProductId(), item.getQuantity());
+							if (!restored) {
+								stockRestoreSuccess = false;
+								stockRestoreError = "Failed to restore stock for product ID: " + item.getProductId();
+								break;
+							}
+						}
+						
+						if (!stockRestoreSuccess) {
+							System.err.println("WARNING: Bill cancelled but stock restoration failed: " + stockRestoreError);
+							request.setAttribute("warning", "Bill status updated successfully but there was an issue restoring product stock. Please check stock levels manually.");
+						}
+					} catch (Exception e) {
+						System.err.println("Error restoring stock quantities: " + e.getMessage());
+						request.setAttribute("warning", "Bill status updated successfully but there was an issue restoring product stock. Please check stock levels manually.");
+					}
+				}
+				
 				request.setAttribute("success", "Bill status updated successfully");
 			} else {
 				request.setAttribute("error", "Failed to update bill status");
@@ -402,9 +448,43 @@ public class BillController extends HttpServlet {
 		if (billIdStr != null) {
 			try {
 				int billId = Integer.parseInt(billIdStr);
+				
+				// Get bill details before deletion to restore stock
+				Bill bill = billService.getBillById(billId);
+				List<BillItem> billItems = null;
+				
+				if (bill != null) {
+					billItems = bill.getItems();
+				}
+				
 				boolean deleted = billService.deleteBill(billId);
 
 				if (deleted) {
+					// Restore stock quantities if bill had items
+					if (billItems != null && !billItems.isEmpty()) {
+						try {
+							boolean stockRestoreSuccess = true;
+							String stockRestoreError = "";
+							
+							for (BillItem item : billItems) {
+								boolean restored = productService.restoreStockQuantity(item.getProductId(), item.getQuantity());
+								if (!restored) {
+									stockRestoreSuccess = false;
+									stockRestoreError = "Failed to restore stock for product ID: " + item.getProductId();
+									break;
+								}
+							}
+							
+							if (!stockRestoreSuccess) {
+								System.err.println("WARNING: Bill deleted but stock restoration failed: " + stockRestoreError);
+								request.setAttribute("warning", "Bill deleted successfully but there was an issue restoring product stock. Please check stock levels manually.");
+							}
+						} catch (Exception e) {
+							System.err.println("Error restoring stock quantities: " + e.getMessage());
+							request.setAttribute("warning", "Bill deleted successfully but there was an issue restoring product stock. Please check stock levels manually.");
+						}
+					}
+					
 					request.setAttribute("success", "Bill deleted successfully");
 				} else {
 					request.setAttribute("error", "Failed to delete bill");
