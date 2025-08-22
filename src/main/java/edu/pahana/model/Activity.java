@@ -23,6 +23,7 @@ public class Activity {
 	public static final String TYPE_BILL_CREATED = "bill_created";
 	public static final String TYPE_BILL_UPDATED = "bill_updated";
 	public static final String TYPE_BILL_PAID = "bill_paid";
+	public static final String TYPE_BILL_EMAIL_SENT = "bill_email_sent";
 	public static final String TYPE_CUSTOMER_ADDED = "customer_added";
 	public static final String TYPE_CUSTOMER_UPDATED = "customer_updated";
 	public static final String TYPE_PRODUCT_ADDED = "product_added";
@@ -143,6 +144,7 @@ public class Activity {
 		switch (activityType) {
 		case TYPE_BILL_CREATED:
 		case TYPE_BILL_PAID:
+		case TYPE_BILL_EMAIL_SENT:
 			return "green";
 		case TYPE_CUSTOMER_ADDED:
 		case TYPE_CUSTOMER_UPDATED:
@@ -168,6 +170,7 @@ public class Activity {
 		case TYPE_BILL_CREATED:
 		case TYPE_BILL_UPDATED:
 		case TYPE_BILL_PAID:
+		case TYPE_BILL_EMAIL_SENT:
 			return "fas fa-file-invoice-dollar";
 		case TYPE_CUSTOMER_ADDED:
 		case TYPE_CUSTOMER_UPDATED:

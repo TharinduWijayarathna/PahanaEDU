@@ -30,11 +30,23 @@
 6. **Configure Database Connection**
    - Edit the database connection settings in your Java source (usually in a properties file or a DAO class) to match your local MySQL credentials.
 
-7. **Run the Project**
+7. **Configure Email Settings (Optional)**
+   - The application includes email functionality for sending bills to customers.
+   - Copy the email configuration template:
+     ```bash
+     cp src/main/resources/email-config.properties.template src/main/resources/email-config.properties
+     ```
+   - Edit `src/main/resources/email-config.properties` and update with your Mailtrap credentials:
+     ```properties
+     mail.smtp.username=your_actual_mailtrap_username
+     mail.smtp.password=your_actual_mailtrap_password
+     ```
+
+8. **Run the Project**
    - Right-click the project > `Run As` > `Run on Server` (for web projects).
    - Or run the main class if it's a standalone application.
 
-8. **Access the Application**
+9. **Access the Application**
    - Open your browser and go to the local server URL (e.g., `http://localhost:8080/PahanaEdu`).
 
 ---

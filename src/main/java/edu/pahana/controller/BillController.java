@@ -8,6 +8,7 @@ import edu.pahana.service.BillService;
 import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.ActivityService;
+import edu.pahana.service.EmailService;
 import edu.pahana.validation.ValidationUtils;
 import edu.pahana.util.PaginationUtil;
 import edu.pahana.util.PaginationUtil.PaginationData;
@@ -32,6 +33,7 @@ public class BillController extends HttpServlet {
 	private CustomerService customerService;
 	private ProductService productService;
 	private ActivityService activityService;
+	private EmailService emailService;
 
 	@Override
 	public void init() throws ServletException {
@@ -39,6 +41,7 @@ public class BillController extends HttpServlet {
 		customerService = CustomerService.getInstance();
 		productService = ProductService.getInstance();
 		activityService = new ActivityService();
+		emailService = new EmailService();
 
 		// Initialize activity system
 		try {
@@ -71,6 +74,9 @@ public class BillController extends HttpServlet {
 			break;
 		case "print":
 			printBill(request, response);
+			break;
+		case "email":
+			sendBillEmail(request, response);
 			break;
 		case "delete":
 			deleteBill(request, response);
@@ -441,5 +447,69 @@ public class BillController extends HttpServlet {
 		} else {
 			response.sendRedirect("bill?action=list");
 		}
+	}
+
+	private void sendBillEmail(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		String billIdStr = request.getParameter("id");
+		String recipientEmail = request.getParameter("email");
+
+		// Validate email parameter
+		if (recipientEmail == null || recipientEmail.trim().isEmpty()) {
+			request.setAttribute("error", "Email address is required");
+			response.sendRedirect("bill?action=view&id=" + billIdStr);
+			return;
+		}
+
+		// Basic email validation
+		if (!recipientEmail.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+			request.setAttribute("error", "Please enter a valid email address");
+			response.sendRedirect("bill?action=view&id=" + billIdStr);
+			return;
+		}
+
+		if (billIdStr != null) {
+			try {
+				int billId = Integer.parseInt(billIdStr);
+				Bill bill = billService.getBillById(billId);
+
+				if (bill != null) {
+					// Get customer details
+					Customer customer = customerService.getCustomerById(bill.getCustomerId());
+					
+					if (customer != null) {
+						// Send email
+						boolean emailSent = emailService.sendBillEmail(bill, customer, recipientEmail.trim());
+						
+						if (emailSent) {
+							// Log email activity
+							try {
+								HttpSession session = request.getSession(false);
+								String username = session != null ? (String) session.getAttribute("username") : "system";
+								activityService.logBillEmailSent(bill.getBillId(), bill.getCustomerName(), username, recipientEmail);
+							} catch (Exception e) {
+								// Log error but don't fail email sending
+								System.err.println("Failed to log email activity: " + e.getMessage());
+							}
+							
+							request.setAttribute("success", "Bill sent successfully to " + recipientEmail);
+						} else {
+							request.setAttribute("error", "Failed to send email. Please check your email configuration.");
+						}
+					} else {
+						request.setAttribute("error", "Customer information not found");
+					}
+				} else {
+					request.setAttribute("error", "Bill not found");
+				}
+			} catch (NumberFormatException e) {
+				request.setAttribute("error", "Invalid bill ID");
+			} catch (Exception e) {
+				request.setAttribute("error", "Error sending email: " + e.getMessage());
+			}
+		}
+
+		response.sendRedirect("bill?action=view&id=" + billIdStr);
 	}
 }
