@@ -142,12 +142,26 @@
 						<p class="text-sm text-gray-600">Growth Rate</p>
 						<c:choose>
 							<c:when test="${revenueData.percentageChange >= 0}">
-								<p class="text-lg font-bold text-green-600">+${revenueData.percentageChange}%</p>
+								<p class="text-lg font-bold text-green-600">
+									+<span id="growth-rate-value">${revenueData.percentageChange}</span>%
+								</p>
 							</c:when>
 							<c:otherwise>
-								<p class="text-lg font-bold text-red-600">${revenueData.percentageChange}%</p>
+								<p class="text-lg font-bold text-red-600">
+									<span id="growth-rate-value">${revenueData.percentageChange}</span>%
+								</p>
 							</c:otherwise>
 						</c:choose>
+						<script>
+							document.addEventListener('DOMContentLoaded', function() {
+								document.querySelectorAll('#growth-rate-value').forEach(function(el) {
+									var num = parseFloat(el.textContent);
+									if (!isNaN(num)) {
+										el.textContent = num.toFixed(2);
+									}
+								});
+							});
+						</script>
 					</div>
 					<c:choose>
 						<c:when test="${revenueData.percentageChange >= 0}">
