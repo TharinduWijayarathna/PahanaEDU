@@ -52,6 +52,15 @@ public class ActivityService {
 	}
 
 	/**
+	 * Log bill email sent activity
+	 */
+	public boolean logBillEmailSent(int billId, String customerName, String username, String emailAddress) throws SQLException {
+		Activity activity = new Activity(Activity.TYPE_BILL_EMAIL_SENT, "Bill sent via email to " + emailAddress, "bill", billId, customerName,
+				username);
+		return logActivity(activity);
+	}
+
+	/**
 	 * Log customer addition activity
 	 */
 	public boolean logCustomerAdded(int customerId, String customerName, String username) throws SQLException {

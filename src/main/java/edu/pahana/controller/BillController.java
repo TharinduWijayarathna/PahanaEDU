@@ -8,6 +8,7 @@ import edu.pahana.service.BillService;
 import edu.pahana.service.CustomerService;
 import edu.pahana.service.ProductService;
 import edu.pahana.service.ActivityService;
+import edu.pahana.service.EmailService;
 import edu.pahana.validation.ValidationUtils;
 import edu.pahana.util.PaginationUtil;
 import edu.pahana.util.PaginationUtil.PaginationData;
@@ -32,6 +33,7 @@ public class BillController extends HttpServlet {
 	private CustomerService customerService;
 	private ProductService productService;
 	private ActivityService activityService;
+	private EmailService emailService;
 
 	@Override
 	public void init() throws ServletException {
@@ -39,6 +41,7 @@ public class BillController extends HttpServlet {
 		customerService = CustomerService.getInstance();
 		productService = ProductService.getInstance();
 		activityService = new ActivityService();
+		emailService = new EmailService();
 
 		// Initialize activity system
 		try {
@@ -71,6 +74,9 @@ public class BillController extends HttpServlet {
 			break;
 		case "print":
 			printBill(request, response);
+			break;
+		case "email":
+			sendBillEmail(request, response);
 			break;
 		case "delete":
 			deleteBill(request, response);
@@ -201,21 +207,18 @@ public class BillController extends HttpServlet {
 			// Get bill-level discount
 			String billDiscountStr = request.getParameter("billDiscount");
 
-			// Validate customer ID
-			if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
-				request.setAttribute("error", "Please select a customer");
-				showCreateBillForm(request, response);
-				return;
+			// Handle customer ID - allow empty for walk-in customers
+			Integer customerId = null;
+			if (customerIdStr != null && !customerIdStr.trim().isEmpty()) {
+				try {
+					customerId = Integer.parseInt(customerIdStr);
+				} catch (NumberFormatException e) {
+					request.setAttribute("error", "Invalid customer selected");
+					showCreateBillForm(request, response);
+					return;
+				}
 			}
-
-			int customerId;
-			try {
-				customerId = Integer.parseInt(customerIdStr);
-			} catch (NumberFormatException e) {
-				request.setAttribute("error", "Invalid customer selected");
-				showCreateBillForm(request, response);
-				return;
-			}
+			// If customerId is null, this will be treated as a walk-in customer
 
 			if (productIds == null || quantities == null || unitPrices == null || productIds.length == 0) {
 				request.setAttribute("error", "Please add at least one item to the invoice");
@@ -297,18 +300,35 @@ public class BillController extends HttpServlet {
 				return;
 			}
 
-			// Create bill
-			Bill bill = billService.createBillFromItems(customerId, items, BigDecimal.valueOf(billDiscount));
+			// Create bill (use -1 for walk-in customers)
+			int customerIdForBill = (customerId != null) ? customerId : -1;
+			Bill bill = billService.createBillFromItems(customerIdForBill, items, BigDecimal.valueOf(billDiscount));
 
 			if (bill != null && billService.createBill(bill)) {
 				// Update stock quantities
+				boolean stockUpdateSuccess = true;
+				String stockUpdateError = "";
+				
 				try {
 					for (BillItem item : items) {
-						productService.updateStockQuantity(item.getProductId(), item.getQuantity());
+						boolean updated = productService.updateStockQuantity(item.getProductId(), item.getQuantity());
+						if (!updated) {
+							stockUpdateSuccess = false;
+							stockUpdateError = "Failed to update stock for product ID: " + item.getProductId();
+							break;
+						}
 					}
 				} catch (Exception e) {
-					// Log error but don't fail bill creation
+					stockUpdateSuccess = false;
+					stockUpdateError = "Error updating stock quantities: " + e.getMessage();
 					System.err.println("Failed to update stock quantities: " + e.getMessage());
+				}
+				
+				if (!stockUpdateSuccess) {
+					// If stock update failed, we should ideally rollback the bill creation
+					// For now, we'll log the error and show a warning to the user
+					System.err.println("WARNING: Bill created but stock update failed: " + stockUpdateError);
+					request.setAttribute("warning", "Bill created successfully but there was an issue updating product stock. Please check stock levels manually.");
 				}
 
 				// Log bill creation activity
@@ -369,9 +389,39 @@ public class BillController extends HttpServlet {
 
 		try {
 			int billId = Integer.parseInt(billIdStr);
+			
+			// Get current bill status before update
+			Bill currentBill = billService.getBillById(billId);
+			String previousStatus = currentBill != null ? currentBill.getStatus() : null;
+			
 			boolean updated = billService.updateBillStatus(billId, status);
 
 			if (updated) {
+				// Handle stock restoration if bill is cancelled
+				if ("Cancelled".equalsIgnoreCase(status) && currentBill != null && currentBill.getItems() != null) {
+					try {
+						boolean stockRestoreSuccess = true;
+						String stockRestoreError = "";
+						
+						for (BillItem item : currentBill.getItems()) {
+							boolean restored = productService.restoreStockQuantity(item.getProductId(), item.getQuantity());
+							if (!restored) {
+								stockRestoreSuccess = false;
+								stockRestoreError = "Failed to restore stock for product ID: " + item.getProductId();
+								break;
+							}
+						}
+						
+						if (!stockRestoreSuccess) {
+							System.err.println("WARNING: Bill cancelled but stock restoration failed: " + stockRestoreError);
+							request.setAttribute("warning", "Bill status updated successfully but there was an issue restoring product stock. Please check stock levels manually.");
+						}
+					} catch (Exception e) {
+						System.err.println("Error restoring stock quantities: " + e.getMessage());
+						request.setAttribute("warning", "Bill status updated successfully but there was an issue restoring product stock. Please check stock levels manually.");
+					}
+				}
+				
 				request.setAttribute("success", "Bill status updated successfully");
 			} else {
 				request.setAttribute("error", "Failed to update bill status");
@@ -396,9 +446,43 @@ public class BillController extends HttpServlet {
 		if (billIdStr != null) {
 			try {
 				int billId = Integer.parseInt(billIdStr);
+				
+				// Get bill details before deletion to restore stock
+				Bill bill = billService.getBillById(billId);
+				List<BillItem> billItems = null;
+				
+				if (bill != null) {
+					billItems = bill.getItems();
+				}
+				
 				boolean deleted = billService.deleteBill(billId);
 
 				if (deleted) {
+					// Restore stock quantities if bill had items
+					if (billItems != null && !billItems.isEmpty()) {
+						try {
+							boolean stockRestoreSuccess = true;
+							String stockRestoreError = "";
+							
+							for (BillItem item : billItems) {
+								boolean restored = productService.restoreStockQuantity(item.getProductId(), item.getQuantity());
+								if (!restored) {
+									stockRestoreSuccess = false;
+									stockRestoreError = "Failed to restore stock for product ID: " + item.getProductId();
+									break;
+								}
+							}
+							
+							if (!stockRestoreSuccess) {
+								System.err.println("WARNING: Bill deleted but stock restoration failed: " + stockRestoreError);
+								request.setAttribute("warning", "Bill deleted successfully but there was an issue restoring product stock. Please check stock levels manually.");
+							}
+						} catch (Exception e) {
+							System.err.println("Error restoring stock quantities: " + e.getMessage());
+							request.setAttribute("warning", "Bill deleted successfully but there was an issue restoring product stock. Please check stock levels manually.");
+						}
+					}
+					
 					request.setAttribute("success", "Bill deleted successfully");
 				} else {
 					request.setAttribute("error", "Failed to delete bill");
@@ -441,5 +525,77 @@ public class BillController extends HttpServlet {
 		} else {
 			response.sendRedirect("bill?action=list");
 		}
+	}
+
+	private void sendBillEmail(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		String billIdStr = request.getParameter("id");
+		String recipientEmail = request.getParameter("email");
+
+		// Validate email parameter
+		if (recipientEmail == null || recipientEmail.trim().isEmpty()) {
+			request.setAttribute("error", "Email address is required");
+			response.sendRedirect("bill?action=view&id=" + billIdStr);
+			return;
+		}
+
+		// Basic email validation
+		if (!recipientEmail.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+			request.setAttribute("error", "Please enter a valid email address");
+			response.sendRedirect("bill?action=view&id=" + billIdStr);
+			return;
+		}
+
+		if (billIdStr != null) {
+			try {
+				int billId = Integer.parseInt(billIdStr);
+				Bill bill = billService.getBillById(billId);
+
+				if (bill != null) {
+					// Handle both regular customers and walk-in customers
+					boolean emailSent;
+					
+					if (bill.getCustomerId() == -1) {
+						// Walk-in customer - send email using bill information only
+						emailSent = emailService.sendBillEmailForWalkIn(bill, recipientEmail.trim());
+					} else {
+						// Regular customer - get customer details and send email
+						Customer customer = customerService.getCustomerById(bill.getCustomerId());
+						
+						if (customer != null) {
+							emailSent = emailService.sendBillEmail(bill, customer, recipientEmail.trim());
+						} else {
+							request.setAttribute("error", "Customer information not found");
+							return;
+						}
+					}
+					
+					if (emailSent) {
+						// Log email activity
+						try {
+							HttpSession session = request.getSession(false);
+							String username = session != null ? (String) session.getAttribute("username") : "system";
+							activityService.logBillEmailSent(bill.getBillId(), bill.getCustomerName(), username, recipientEmail);
+						} catch (Exception e) {
+							// Log error but don't fail email sending
+							System.err.println("Failed to log email activity: " + e.getMessage());
+						}
+						
+						request.setAttribute("success", "Bill sent successfully to " + recipientEmail);
+					} else {
+						request.setAttribute("error", "Failed to send email. Please check your email configuration.");
+					}
+				} else {
+					request.setAttribute("error", "Bill not found");
+				}
+			} catch (NumberFormatException e) {
+				request.setAttribute("error", "Invalid bill ID");
+			} catch (Exception e) {
+				request.setAttribute("error", "Error sending email: " + e.getMessage());
+			}
+		}
+
+		response.sendRedirect("bill?action=view&id=" + billIdStr);
 	}
 }

@@ -262,4 +262,17 @@ public class ProductDAO {
 		}
 		return false;
 	}
+
+	// Method to restore stock quantity when a bill is deleted or cancelled
+	public boolean restoreStockQuantity(int productId, int quantityToRestore) throws SQLException {
+		String query = "UPDATE Product SET stock_quantity = stock_quantity + ? WHERE product_id = ?";
+
+		Connection connection = DBConnectionFactory.getConnection();
+		PreparedStatement statement = connection.prepareStatement(query);
+		statement.setInt(1, quantityToRestore);
+		statement.setInt(2, productId);
+
+		int rowsUpdated = statement.executeUpdate();
+		return rowsUpdated > 0;
+	}
 }

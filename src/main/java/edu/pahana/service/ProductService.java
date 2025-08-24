@@ -118,4 +118,9 @@ public class ProductService {
 	public boolean hasSufficientStock(int productId, int requiredQuantity) throws SQLException {
 		return productDAO.hasSufficientStock(productId, requiredQuantity);
 	}
+
+	// Method to restore stock quantity when a bill is deleted or cancelled
+	public boolean restoreStockQuantity(int productId, int quantityToRestore) throws SQLException {
+		return productDAO.restoreStockQuantity(productId, quantityToRestore);
+	}
 }

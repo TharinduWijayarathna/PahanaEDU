@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS Product (
 -- Bills table
 CREATE TABLE IF NOT EXISTS Bill (
     bill_id INT AUTO_INCREMENT PRIMARY KEY,
-    customer_id INT NOT NULL,
+    customer_id INT NULL,
     customer_name VARCHAR(100) NOT NULL,
     account_number VARCHAR(20) NOT NULL,
     bill_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -88,6 +88,10 @@ INSERT INTO Customer (account_number, name, address, telephone) VALUES
 ('CUST001', 'John Smith', '123 Main St, Colombo', '0771234567'),
 ('CUST002', 'Mary Johnson', '456 Park Ave, Colombo', '0772345678'),
 ('CUST003', 'David Williams', '789 Oak Rd, Colombo', '0773456789');
+
+-- Insert walk-in customer record for new database setups (IMPORTANT for walk-in customer functionality)
+INSERT INTO Customer (customer_id, account_number, name, address, telephone) VALUES
+(-1, 'WALK-IN', 'Walk-in Customer', 'No Address Provided', 'No Phone Provided');
 
 -- Insert sample products
 INSERT INTO Product (name, description, price, stock_quantity) VALUES

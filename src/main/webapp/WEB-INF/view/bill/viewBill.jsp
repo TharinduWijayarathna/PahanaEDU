@@ -205,7 +205,12 @@
 			<button onclick="printBill()"
 				class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center">
 				<i class="fas fa-print mr-2"></i>Print Bill
-			</button> <a href="bill?action=list"
+			</button>
+			<button onclick="showEmailModal()"
+				class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+				<i class="fas fa-envelope mr-2"></i>Send Email
+			</button>
+			<a href="bill?action=list"
 				class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center">
 				<i class="fas fa-arrow-left mr-2"></i>Back
 			</a>
@@ -289,7 +294,7 @@
 			</thead>
 			<tbody>
 				<c:forEach var="item" items="${bill.items}" varStatus="status">
-					<tr style="background: <c:choose><c:when test="${status.index % 2 == 0}">white</c:when><c:otherwise>#fff7ed</c:otherwise></c:choose>;">
+					<tr style="background: white;">
 						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong>${status.index + 1}</strong></td>
 						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;"><strong>${item.productName}</strong></td>
 						<td style="padding: 15px; text-align: left; color: #7c2d12; font-size: 14px;">${item.quantity}</td>
@@ -338,6 +343,54 @@
 	</div>
 </div>
 
+<!-- Email Modal -->
+<div id="emailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+	<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+		<div class="mt-3">
+			<div class="flex items-center justify-between mb-4">
+				<h3 class="text-lg font-semibold text-gray-900 flex items-center">
+					<i class="fas fa-envelope mr-2 text-blue-600"></i>Send Bill via Email
+				</h3>
+				<button onclick="hideEmailModal()" class="text-gray-400 hover:text-gray-600">
+					<i class="fas fa-times"></i>
+				</button>
+			</div>
+			
+			<form id="emailForm" action="bill" method="get" class="space-y-4">
+				<input type="hidden" name="action" value="email">
+				<input type="hidden" name="id" value="${bill.billId}">
+				
+				<div>
+					<label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+						<i class="fas fa-envelope mr-1"></i>Email Address
+					</label>
+					<input type="email" id="email" name="email" required
+						class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+						placeholder="Enter recipient email address">
+				</div>
+				
+				<div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+					<p class="text-sm text-blue-800">
+						<i class="fas fa-info-circle mr-1"></i>
+						This will send a professional HTML bill to the specified email address.
+					</p>
+				</div>
+				
+				<div class="flex items-center justify-end space-x-3 pt-4">
+					<button type="button" onclick="hideEmailModal()"
+						class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
+						Cancel
+					</button>
+					<button type="submit"
+						class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+						<i class="fas fa-paper-plane mr-2"></i>Send Email
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
 <script>
 function printBill() {
 	// Show the print content
@@ -351,6 +404,53 @@ function printBill() {
 		document.getElementById('printContent').style.display = 'none';
 	}, 1000);
 }
+
+function showEmailModal() {
+	document.getElementById('emailModal').classList.remove('hidden');
+	document.getElementById('email').focus();
+}
+
+function hideEmailModal() {
+	document.getElementById('emailModal').classList.add('hidden');
+	document.getElementById('emailForm').reset();
+}
+
+// Close modal when clicking outside
+document.getElementById('emailModal').addEventListener('click', function(e) {
+	if (e.target === this) {
+		hideEmailModal();
+	}
+});
+
+// Handle form submission
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+	const email = document.getElementById('email').value.trim();
+	if (!email) {
+		e.preventDefault();
+		alert('Please enter an email address');
+		return;
+	}
+	
+	// Basic email validation
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (!emailRegex.test(email)) {
+		e.preventDefault();
+		alert('Please enter a valid email address');
+		return;
+	}
+	
+	// Show loading state
+	const submitBtn = this.querySelector('button[type="submit"]');
+	const originalText = submitBtn.innerHTML;
+	submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+	submitBtn.disabled = true;
+	
+	// Reset button after a delay (in case of error)
+	setTimeout(function() {
+		submitBtn.innerHTML = originalText;
+		submitBtn.disabled = false;
+	}, 5000);
+});
 </script>
 	</div>
 </div>
